@@ -4,3 +4,10 @@ dist/
 HOW_TO_USE_AI_WHEN_LEARNING.md
 opencode.json
 CLAUDE.md
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
