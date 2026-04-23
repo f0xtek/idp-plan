@@ -1,0 +1,6 @@
+node_modules/
+.vscode/
+dist/
+HOW_TO_USE_AI_WHEN_LEARNING.md
+opencode.json
+CLAUDE.md
