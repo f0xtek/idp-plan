@@ -617,6 +617,303 @@ export function useCompletionState(phases) {
   };
 }
 
+// --- UI Components ---
+
+export function PassphraseModal({ onSubmit, userToken }) {
+  const [value, setValue] = useState("");
+  const [error, setError] = useState(null);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (value.length < 8) {
+      setError("Passphrase must be at least 8 characters");
+      return;
+    }
+    setError(null);
+    onSubmit(value);
+  };
+
+  return (
+    <div style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0, 0, 0, 0.75)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 9999,
+      fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+    }}>
+      <div style={{
+        background: "#0f0f1a",
+        border: "1px solid #1e293b",
+        borderRadius: 8,
+        padding: "32px",
+        width: "100%",
+        maxWidth: 400,
+        margin: "0 16px",
+      }}>
+        <h2 style={{
+          fontSize: 18,
+          fontWeight: 700,
+          color: "#e2e8f0",
+          margin: "0 0 8px",
+          letterSpacing: "-0.01em",
+        }}>
+          {userToken ? "Switch identity" : "Start tracking"}
+        </h2>
+        <p style={{
+          fontSize: 12,
+          color: "#64748b",
+          margin: "0 0 24px",
+          lineHeight: 1.6,
+        }}>
+          Enter a passphrase to sync your progress across devices
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <label
+            htmlFor="passphrase-input"
+            style={{
+              display: "block",
+              fontSize: 11,
+              color: "#94a3b8",
+              marginBottom: 6,
+              letterSpacing: "0.05em",
+            }}
+          >
+            Passphrase
+          </label>
+          <input
+            id="passphrase-input"
+            type="password"
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              if (error) setError(null);
+            }}
+            placeholder="At least 8 characters"
+            autoFocus
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: 4,
+              border: `1px solid ${error ? "#ef4444" : "#1e293b"}`,
+              background: "#0a0a0f",
+              color: "#e2e8f0",
+              fontSize: 13,
+              fontFamily: "inherit",
+              outline: "none",
+              boxSizing: "border-box",
+              transition: "border-color 0.15s",
+            }}
+          />
+          {error && (
+            <p style={{
+              fontSize: 11,
+              color: "#ef4444",
+              margin: "6px 0 0",
+            }}>
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              padding: "10px 16px",
+              marginTop: 16,
+              borderRadius: 4,
+              border: "1px solid #60a5fa",
+              background: "#1e3a5f",
+              color: "#60a5fa",
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: "inherit",
+              cursor: "pointer",
+              letterSpacing: "0.02em",
+              transition: "all 0.15s",
+            }}
+          >
+            {userToken ? "Sign in" : "Start tracking"}
+          </button>
+        </form>
+
+        {userToken && (
+          <p style={{
+            fontSize: 11,
+            color: "#475569",
+            margin: "16px 0 0",
+            textAlign: "center",
+          }}>
+            Signing in with a new passphrase will replace your local progress.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function TaskCheckbox({ checked, onChange, phaseColor, taskLabel }) {
+  return (
+    <button
+      role="checkbox"
+      aria-checked={checked}
+      aria-label={checked ? `Mark ${taskLabel} as incomplete` : `Mark ${taskLabel} as complete`}
+      onClick={onChange}
+      style={{
+        width: 44,
+        height: 44,
+        minWidth: 44,
+        minHeight: 44,
+        padding: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 4,
+        border: `2px solid ${checked ? phaseColor : "#475569"}`,
+        background: checked ? phaseColor : "transparent",
+        cursor: "pointer",
+        transition: "all 0.15s",
+        flexShrink: 0,
+        fontFamily: "inherit",
+      }}
+    >
+      {checked && (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 9L7.5 12.5L14 5.5" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
+export function WeekProgressBar({ completed, total, phaseColor }) {
+  const ratio = total > 0 ? completed / total : 0;
+  const isComplete = total > 0 && completed === total;
+
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      <span
+        style={{
+          position: "relative",
+          width: 60,
+          height: 6,
+          borderRadius: 3,
+          background: "#1e293b",
+          overflow: "hidden",
+          display: "inline-block",
+        }}
+      >
+        <span
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            height: "100%",
+            width: `${ratio * 100}%`,
+            borderRadius: 3,
+            background: phaseColor,
+            opacity: isComplete ? 1 : 0.7,
+            boxShadow: isComplete ? `0 0 6px ${phaseColor}` : "none",
+            transition: "width 0.2s, opacity 0.2s, box-shadow 0.2s",
+          }}
+        />
+      </span>
+      <span
+        style={{
+          fontSize: 10,
+          fontFamily: "inherit",
+          color: isComplete ? phaseColor : "#94a3b8",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {completed}/{total}
+      </span>
+    </span>
+  );
+}
+
+export function ResetPhaseButton({ phaseTitle, onReset }) {
+  const [confirming, setConfirming] = useState(false);
+
+  if (confirming) {
+    return (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <span style={{
+          fontSize: 11,
+          color: "#ef4444",
+          lineHeight: 1.4,
+        }}>
+          Reset all progress for {phaseTitle}? This cannot be undone.
+        </span>
+        <span style={{ display: "inline-flex", gap: 6 }}>
+          <button
+            onClick={() => {
+              onReset();
+              setConfirming(false);
+            }}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 4,
+              border: "1px solid #ef4444",
+              background: "#3b1111",
+              color: "#ef4444",
+              fontSize: 11,
+              fontWeight: 600,
+              fontFamily: "inherit",
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => setConfirming(false)}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 4,
+              border: "1px solid #1e293b",
+              background: "transparent",
+              color: "#94a3b8",
+              fontSize: 11,
+              fontWeight: 600,
+              fontFamily: "inherit",
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
+          >
+            Cancel
+          </button>
+        </span>
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setConfirming(true)}
+      style={{
+        padding: "4px 8px",
+        borderRadius: 4,
+        border: "none",
+        background: "transparent",
+        color: "#64748b",
+        fontSize: 11,
+        fontFamily: "inherit",
+        cursor: "pointer",
+        transition: "color 0.15s",
+      }}
+    >
+      Reset progress
+    </button>
+  );
+}
+
 export default function LearningPlan() {
   const [activePhase, setActivePhase] = useState(0);
   const [expandedWeek, setExpandedWeek] = useState(null);
