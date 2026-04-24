@@ -10,5 +10,14 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
+  ],
+  "main": "./worker/index.js",
+  // Create the KV namespace with: wrangler kv namespace create COMPLETION_STATE
+  "kv_namespaces": [
+    {
+      "binding": "COMPLETION_STATE",
+      // Replace with the actual ID after running: wrangler kv namespace create COMPLETION_STATE
+      "id": "<created-via-wrangler-kv-namespace-create>"
+    }
   ]
 }
