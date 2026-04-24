@@ -1,23 +1,22 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "blue-hill-6266",
-  "compatibility_date": "2026-04-23",
-  "observability": {
-    "enabled": true
-  },
-  "assets": {
-    "not_found_handling": "single-page-application"
-  },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
-  "main": "./worker/index.js",
-  // Create the KV namespace with: wrangler kv namespace create COMPLETION_STATE
-  "kv_namespaces": [
-    {
-      "binding": "COMPLETION_STATE",
-      // Replace with the actual ID after running: wrangler kv namespace create COMPLETION_STATE
-      "id": "<created-via-wrangler-kv-namespace-create>"
-    }
-  ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "blue-hill-6266",
+	"compatibility_date": "2026-04-23",
+	"observability": {
+		"enabled": true
+	},
+	"assets": {
+		"not_found_handling": "single-page-application"
+	},
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": "./worker/index.js",
+	// Create the KV namespace with: wrangler kv namespace create COMPLETION_STATE
+	"kv_namespaces": [
+		{
+			"binding": "COMPLETION_STATE",
+			"id": "0451cd81519a48dea280f44ad1320263"
+		}
+	]
 }
