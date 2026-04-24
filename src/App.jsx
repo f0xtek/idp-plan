@@ -918,6 +918,21 @@ export default function LearningPlan() {
   const [activePhase, setActivePhase] = useState(0);
   const [expandedWeek, setExpandedWeek] = useState(null);
   const [activeTab, setActiveTab] = useState("plan");
+  const [showPassphraseModal, setShowPassphraseModal] = useState(false);
+
+  const {
+    completionState,
+    userToken,
+    isLoading,
+    isSyncing,
+    syncError,
+    toggleTask,
+    setPassphrase,
+    resetPhase,
+    switchIdentity,
+  } = useCompletionState(phases);
+
+  const [dismissedError, setDismissedError] = useState(null);
 
   const phase = phases[activePhase];
 
@@ -933,6 +948,84 @@ export default function LearningPlan() {
       minHeight: "100vh",
       padding: "0",
     }}>
+      {/* Passphrase Modal */}
+      {(userToken === null || showPassphraseModal) && (
+        <PassphraseModal
+          onSubmit={(passphrase) => {
+            setPassphrase(passphrase);
+            setShowPassphraseModal(false);
+          }}
+          userToken={userToken}
+        />
+      )}
+
+      {/* Sync status indicator */}
+      {isSyncing && (
+        <div style={{
+          position: "fixed",
+          top: 8,
+          right: 16,
+          padding: "6px 12px",
+          borderRadius: 4,
+          background: "#1e3a5f",
+          border: "1px solid #60a5fa40",
+          color: "#60a5fa",
+          fontSize: 10,
+          fontFamily: "'JetBrains Mono', monospace",
+          letterSpacing: "0.05em",
+          zIndex: 9998,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+        }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: "50%",
+            background: "#60a5fa",
+            animation: "pulse 1s infinite",
+          }} />
+          Syncing…
+        </div>
+      )}
+
+      {/* Sync error display */}
+      {syncError && syncError !== dismissedError && (
+        <div style={{
+          position: "fixed",
+          top: 8,
+          right: 16,
+          padding: "8px 12px",
+          borderRadius: 4,
+          background: "#3b1111",
+          border: "1px solid #ef444440",
+          color: "#ef4444",
+          fontSize: 11,
+          fontFamily: "'JetBrains Mono', monospace",
+          zIndex: 9998,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          maxWidth: 320,
+        }}>
+          <span style={{ flex: 1, lineHeight: 1.4 }}>Sync error: {syncError}</span>
+          <button
+            onClick={() => setDismissedError(syncError)}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#ef4444",
+              fontSize: 14,
+              cursor: "pointer",
+              padding: "0 2px",
+              fontFamily: "inherit",
+              flexShrink: 0,
+            }}
+            aria-label="Dismiss sync error"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{
         background: "linear-gradient(135deg, #0f0f1a 0%, #1a0f2e 50%, #0f1a1a 100%)",
@@ -950,6 +1043,26 @@ export default function LearningPlan() {
             <span style={{ color: "#64748b", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase" }}>
               6-Month Learning Plan
             </span>
+            {userToken && (
+              <button
+                onClick={() => setShowPassphraseModal(true)}
+                style={{
+                  marginLeft: "auto",
+                  padding: "4px 10px",
+                  borderRadius: 4,
+                  border: "1px solid #1e293b",
+                  background: "transparent",
+                  color: "#64748b",
+                  fontSize: 10,
+                  fontFamily: "inherit",
+                  cursor: "pointer",
+                  letterSpacing: "0.05em",
+                  transition: "all 0.15s",
+                }}
+              >
+                Switch identity
+              </button>
+            )}
           </div>
           <h1 style={{
             fontSize: "clamp(22px, 4vw, 32px)",
@@ -1053,6 +1166,12 @@ export default function LearningPlan() {
                 <div style={{ textAlign: "right" }}>
                   <div style={{ color: phase.color, fontSize: 20, fontWeight: 700 }}>{phase.weeklyHours}</div>
                   <div style={{ color: "#64748b", fontSize: 10 }}>per week</div>
+                  <div style={{ marginTop: 8 }}>
+                    <ResetPhaseButton
+                      phaseTitle={phase.title + ": " + phase.subtitle}
+                      onReset={() => resetPhase(activePhase)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1061,6 +1180,10 @@ export default function LearningPlan() {
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {phase.weeks_data.map((w) => {
                 const isOpen = expandedWeek === w.week;
+                const weekCompleted = w.tasks.reduce((count, _task, tIdx) => {
+                  const tid = getTaskId(activePhase, w.week, tIdx);
+                  return count + (completionState[tid] ? 1 : 0);
+                }, 0);
                 return (
                   <div key={w.week} style={{
                     border: `1px solid ${isOpen ? phase.color + "50" : "#1e293b"}`,
@@ -1105,6 +1228,7 @@ export default function LearningPlan() {
                       <span style={{ flex: 1, fontSize: 13, fontWeight: isOpen ? 600 : 400, color: isOpen ? "#e2e8f0" : "#94a3b8" }}>
                         {w.title}
                       </span>
+                      <WeekProgressBar completed={weekCompleted} total={w.tasks.length} phaseColor={phase.color} />
                       <span style={{ color: "#64748b", fontSize: 11 }}>{w.hours}h</span>
                       <span style={{ color: "#64748b", fontSize: 14, transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.15s" }}>›</span>
                     </button>
@@ -1114,16 +1238,23 @@ export default function LearningPlan() {
                         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
                           {w.tasks.map((task, i) => {
                             const tc = typeColors[task.type];
+                            const taskId = getTaskId(activePhase, w.week, i);
                             return (
                               <div key={i} style={{
                                 display: "flex",
-                                alignItems: "flex-start",
+                                alignItems: "center",
                                 gap: 10,
                                 padding: "10px 12px",
                                 borderRadius: 4,
                                 background: tc.bg,
                                 border: `1px solid ${tc.border}30`,
                               }}>
+                                <TaskCheckbox
+                                  checked={completionState[taskId] || false}
+                                  onChange={() => toggleTask(taskId)}
+                                  phaseColor={phase.color}
+                                  taskLabel={task.label}
+                                />
                                 <span style={{
                                   padding: "2px 7px",
                                   borderRadius: 2,
@@ -1137,9 +1268,9 @@ export default function LearningPlan() {
                                 }}>
                                   {tc.label}
                                 </span>
-                                <span style={{ flex: 1, fontSize: 12, color: "#cbd5e1", lineHeight: 1.5 }}>
+                                <span style={{ flex: 1, fontSize: 12, color: completionState[taskId] ? "#64748b" : "#cbd5e1", lineHeight: 1.5, textDecoration: completionState[taskId] ? "line-through" : "none", transition: "all 0.15s" }}>
                                   {task.url ? (
-                                    <a href={task.url} target="_blank" rel="noopener noreferrer" style={{ color: "#93c5fd", textDecoration: "none" }}>
+                                    <a href={task.url} target="_blank" rel="noopener noreferrer" style={{ color: completionState[taskId] ? "#475569" : "#93c5fd", textDecoration: "none" }}>
                                       {task.label}
                                     </a>
                                   ) : task.label}
