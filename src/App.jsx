@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const phases = [
   {
@@ -374,6 +374,248 @@ const typeColors = {
   build: { bg: "#3a1a2a", border: "#f472b6", label: "BUILD", labelBg: "#9d174d" },
   habit: { bg: "#2a2a1a", border: "#facc15", label: "HABIT", labelBg: "#713f12" },
 };
+
+// --- Utility functions ---
+
+export async function deriveToken(passphrase) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(passphrase);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+export function getTaskId(phaseIndex, weekNumber, taskIndex) {
+  return `p${phaseIndex}-w${weekNumber}-t${taskIndex}`;
+}
+
+export function mergeState(local, remote) {
+  if (Object.keys(local).length === 0) {
+    return { ...remote };
+  }
+  const merged = { ...remote };
+  for (const [key, value] of Object.entries(local)) {
+    if (value) merged[key] = true;
+  }
+  return merged;
+}
+
+// --- Custom hook ---
+
+const LS_TOKEN_KEY = "lp-user-token";
+const LS_STATE_KEY = "lp-completion-state";
+const DEBOUNCE_MS = 2000;
+const RETRY_INTERVAL_MS = 30000;
+const MAX_RETRIES = 3;
+
+function readLocalStorage(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalStorage(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // localStorage unavailable — silently ignore
+  }
+}
+
+function removeLocalStorage(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // localStorage unavailable — silently ignore
+  }
+}
+
+function parseCompletionState(raw) {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+}
+
+export function useCompletionState(phases) {
+  const [completionState, setCompletionState] = useState(() => {
+    const raw = readLocalStorage(LS_STATE_KEY);
+    return parseCompletionState(raw);
+  });
+  const [userToken, setUserToken] = useState(() => {
+    const token = readLocalStorage(LS_TOKEN_KEY);
+    return token && /^[0-9a-f]{64}$/.test(token) ? token : null;
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState(null);
+
+  const debounceTimer = useRef(null);
+  const retryTimer = useRef(null);
+  const retryCount = useRef(0);
+  const pendingState = useRef(null);
+  const tokenRef = useRef(userToken);
+
+  // Keep tokenRef in sync
+  useEffect(() => {
+    tokenRef.current = userToken;
+  }, [userToken]);
+
+  // Sync helper: PUT completion state to the API
+  const syncToApi = useCallback(async (token, state) => {
+    if (!token) return;
+    setIsSyncing(true);
+    try {
+      const res = await fetch("/api/progress", {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(state),
+      });
+      if (!res.ok) {
+        throw new Error(`Sync failed: ${res.status}`);
+      }
+      setSyncError(null);
+      retryCount.current = 0;
+      pendingState.current = null;
+    } catch (err) {
+      setSyncError(err.message || "Sync failed");
+      pendingState.current = state;
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  // Schedule a debounced sync
+  const scheduleDebouncedSync = useCallback((token, state) => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    debounceTimer.current = setTimeout(() => {
+      debounceTimer.current = null;
+      syncToApi(token, state);
+    }, DEBOUNCE_MS);
+  }, [syncToApi]);
+
+  // Retry interval for failed syncs
+  useEffect(() => {
+    retryTimer.current = setInterval(() => {
+      if (pendingState.current && tokenRef.current && retryCount.current < MAX_RETRIES) {
+        retryCount.current += 1;
+        syncToApi(tokenRef.current, pendingState.current);
+      }
+    }, RETRY_INTERVAL_MS);
+    return () => {
+      if (retryTimer.current) clearInterval(retryTimer.current);
+    };
+  }, [syncToApi]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
+
+  // Fetch remote state on mount (or when token changes) and merge
+  useEffect(() => {
+    if (!userToken) return;
+    let cancelled = false;
+    setIsLoading(true);
+
+    (async () => {
+      try {
+        const res = await fetch("/api/progress", {
+          method: "GET",
+          headers: { "Authorization": `Bearer ${userToken}` },
+        });
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+        const remote = await res.json();
+        if (!cancelled) {
+          setCompletionState(prev => {
+            const merged = mergeState(prev, remote);
+            writeLocalStorage(LS_STATE_KEY, JSON.stringify(merged));
+            return merged;
+          });
+        }
+      } catch {
+        // API unreachable — continue with local cache
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [userToken]);
+
+  const toggleTask = useCallback((taskId) => {
+    setCompletionState(prev => {
+      const next = { ...prev };
+      if (next[taskId]) {
+        delete next[taskId];
+      } else {
+        next[taskId] = true;
+      }
+      writeLocalStorage(LS_STATE_KEY, JSON.stringify(next));
+      scheduleDebouncedSync(tokenRef.current, next);
+      return next;
+    });
+  }, [scheduleDebouncedSync]);
+
+  const setPassphrase = useCallback(async (passphrase) => {
+    const token = await deriveToken(passphrase);
+    setUserToken(token);
+    writeLocalStorage(LS_TOKEN_KEY, token);
+    // Remote fetch + merge will be triggered by the userToken useEffect
+  }, []);
+
+  const resetPhase = useCallback((phaseIndex) => {
+    setCompletionState(prev => {
+      const prefix = `p${phaseIndex}-`;
+      const next = {};
+      for (const [key, value] of Object.entries(prev)) {
+        if (!key.startsWith(prefix)) {
+          next[key] = value;
+        }
+      }
+      writeLocalStorage(LS_STATE_KEY, JSON.stringify(next));
+      scheduleDebouncedSync(tokenRef.current, next);
+      return next;
+    });
+  }, [scheduleDebouncedSync]);
+
+  const switchIdentity = useCallback(() => {
+    setUserToken(null);
+    setCompletionState({});
+    removeLocalStorage(LS_TOKEN_KEY);
+    removeLocalStorage(LS_STATE_KEY);
+    setSyncError(null);
+    pendingState.current = null;
+    retryCount.current = 0;
+  }, []);
+
+  return {
+    completionState,
+    userToken,
+    isLoading,
+    isSyncing,
+    syncError,
+    toggleTask,
+    setPassphrase,
+    resetPhase,
+    switchIdentity,
+  };
+}
 
 export default function LearningPlan() {
   const [activePhase, setActivePhase] = useState(0);
