@@ -1,45 +1,51 @@
-# IDP Learning Plan
+# IDP Learning Plan — Local Container
 
-An interactive "Agentic AI Platform" learning plan tracker built with React. The application presents a structured 24-week curriculum across three phases — Foundation, Application, and Production — with weekly tasks categorised as reading, courses, builds, and habits. Budget tracking and an MCP server stack overview are included as supplementary tabs.
-
-The site is built with Vite.
-
-## Local Development
-
-### Run with Podman Compose (recommended)
+## Run with Podman (recommended)
 
 ```bash
-# 1. Build and start
-podman compose up -d --build
+# 1. Build the image
+podman build -t idp-learning-plan .
 
-# 2. Open in browser
+# 2. Run it
+podman run -d --name idp-plan -p 8080:80 idp-learning-plan
+
+# 3. Open in browser
 open http://localhost:8080
+# or just navigate to http://localhost:8080
 ```
 
-### Stop / remove
+## Stop / restart
 
 ```bash
-# Stop and remove containers
-podman compose down
+# Stop
+podman stop idp-plan
+
+# Start again (no rebuild needed)
+podman start idp-plan
+
+# Remove container entirely
+podman rm -f idp-plan
 
 # Remove image
 podman rmi idp-learning-plan
 ```
 
-### Rebuild after changes
+## Rebuild after changes
 
 If you edit App.jsx and want to update the container:
 
 ```bash
-podman compose down && podman rmi idp-learning-plan
-podman compose up -d --build
+podman rm -f idp-plan
+podman rmi idp-learning-plan
+podman build -t idp-learning-plan .
+podman run -d --name idp-plan -p 8080:80 idp-learning-plan
 ```
 
-### Alternative: run with Docker Compose
+## Alternative: run with Docker
 
 Same commands, just replace `podman` with `docker`.
 
-### Alternative: run without a container (Node required)
+## Alternative: run without a container (Node required)
 
 ```bash
 npm install
@@ -47,4 +53,3 @@ npm run build
 npm run preview
 # Opens on http://localhost:4173
 ```
-
