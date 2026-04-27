@@ -18,8 +18,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "read", label: "Anthropic — 'Building Effective Agents' essay", url: "https://www.anthropic.com/research/building-effective-agents", time: "1.5h" },
-          { type: "read", label: "AWS Security Blog — 'IAM policies: what they can and cannot control' (understand the policy model before building on top of it)", url: "https://aws.amazon.com/blogs/security/", time: "1h" },
-          { type: "read", label: "Hacking the Cloud — AWS General Knowledge section (attacker's mental model of AWS)", url: "https://hackingthe.cloud/aws/general-knowledge/", time: "1h" },
+          { type: "read", label: "Hacking the Cloud — AWS General Knowledge section (attacker's mental model of AWS)", url: "https://hackingthe.cloud/aws/general-knowledge/aws_cli_tips_and_tricks/", time: "1h" },
           { type: "read", label: "Wiz Blog — 'Twenty Years of Cloud Security Research' (essential historical context)", url: "https://www.wiz.io/blog/twenty-years-of-cloud-security-research", time: "1h" },
           { type: "habit", label: "Subscribe: CloudSecList (cloudseclist.com), AWS Security Digest (awssecuritydigest.com), AWS Security Blog RSS, Hacking the Cloud blog", time: "0.5h" },
           { type: "habit", label: "Follow: Scott Piper, Nick Frichette, Marco Lancini, Clint Gibler on X/LinkedIn", time: "0.5h" },
@@ -57,7 +56,8 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "course", label: "DeepLearning.AI — 'MCP: Build Rich-Context AI Apps with Anthropic'", url: "https://learn.deeplearning.ai/courses/mcp-build-rich-context-ai-apps-with-anthropic", time: "2h" },
-          { type: "course", label: "Anthropic Academy — 'Intro to MCP' + 'MCP Advanced Topics'", url: "https://anthropic.skilljar.com/", time: "2h" },
+          { type: "course", label: "Anthropic Academy — 'Intro to MCP'", url: "https://anthropic.skilljar.com/introduction-to-model-context-protocol", time: "1h" },
+          { type: "course", label: "Anthropic Academy — 'MCP Advanced Topics'", url: "https://anthropic.skilljar.com/model-context-protocol-advanced-topics", time: "1h" },
           { type: "build", label: "Install the full awslabs/mcp suite — focus on: AWS API server, Security Hub MCP, GuardDuty (via AWS API MCP), CloudTrail. Verify agent can call each.", url: "https://github.com/awslabs/mcp", time: "2.5h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
@@ -83,7 +83,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "build", label: "Complete all 6 levels of flaws.cloud — S3 misconfigurations, EC2 metadata, exposed credentials, IAM privilege escalation. Read the write-up for each level.", url: "http://flaws.cloud/", time: "4h" },
-          { type: "read", label: "AWS Security Blog — 'Understanding IAM policy evaluation' (deep read, not a skim)", url: "https://aws.amazon.com/blogs/security/", time: "1.5h" },
+          { type: "read", label: "AWS Security — 'Understanding IAM policy evaluation' (deep read, not a skim)", url: "https://aws.amazon.com/video/watch/1ae19d026f0/", time: "0.25h" },
           { type: "read", label: "DDIA ch 6 (partitioning) + ch 7 (transactions)", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
@@ -96,7 +96,7 @@ const phases = [
         tasks: [
           { type: "build", label: "flaws2.cloud — complete both the attacker AND defender paths. The defender path is more relevant to your use case but the attacker path builds essential intuition.", url: "http://flaws2.cloud/", time: "3h" },
           { type: "build", label: "Deploy IAM Vulnerable (BishopFox) — explore 5–10 of the 31 privilege escalation pathways. Focus on PassRole, CreatePolicyVersion, and AssumeRole chains.", url: "https://github.com/BishopFox/iam-vulnerable", time: "2.5h" },
-          { type: "read", label: "Hacking the Cloud — IAM section (privilege escalation techniques)", url: "https://hackingthe.cloud/aws/exploitation/iam/", time: "1h" },
+          { type: "read", label: "Hacking the Cloud — IAM section (privilege escalation techniques)", url: "https://hackingthe.cloud/aws/exploitation/iam_privilege_escalation/", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
         checkpoint: "You can walk through 5 IAM privilege escalation paths from memory and explain the detection logic for each. This is the knowledge your agent needs to reason about IAM findings."
@@ -134,7 +134,7 @@ const phases = [
         tasks: [
           { type: "build", label: "Scaffold event-driven trigger: EventBridge rule on GuardDuty HIGH/CRITICAL findings → SQS → Lambda → LangGraph agent invocation", time: "3h" },
           { type: "build", label: "Wire AWS MCP (GuardDuty, Security Hub, CloudTrail tools) as agent tools. Test: agent can fetch a finding, pull associated CloudTrail events, and summarise in plain English.", time: "3h" },
-          { type: "read", label: "Anthropic Academy — 'Claude Agent SDK' module", url: "https://anthropic.skilljar.com/", time: "0.5h" },
+          { type: "read", label: "Claude Agent SDK workshop", url: "https://www.youtube.com/watch?v=TqC1qOfiVcQ", time: "2h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
         checkpoint: "When a test GuardDuty finding fires, the agent automatically investigates and produces a triage summary. No human has typed anything."
@@ -145,7 +145,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "build", label: "Build tool: generate_remediation_pr() — agent identifies the Terraform resource causing the finding (e.g. overly permissive S3 bucket policy), generates a corrective Terraform diff, commits to a branch, opens PR via GitHub MCP with finding context in the PR body.", time: "4h" },
-          { type: "read", label: "AWS Security Blog — 'How to use AWS Config rules to enforce security baselines'", url: "https://aws.amazon.com/blogs/security/", time: "1h" },
+          { type: "read", label: "AWS Config Best Practices", url: "https://aws.amazon.com/blogs/mt/aws-config-best-practices/", time: "1h" },
           { type: "read", label: "DDIA ch 9 (consistency and consensus)", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "1h" },
         ],
@@ -252,7 +252,7 @@ const phases = [
         title: "EKS and container security — extend the agent's domain",
         hours: 7,
         tasks: [
-          { type: "build", label: "EKSGoat: complete the attack scenarios in your sandbox EKS cluster — RBAC misconfig, privileged container escape, exposed dashboard, secrets in env vars.", url: "https://github.com/amethystcoder/EKSGoat", time: "3h" },
+          { type: "build", label: "EKSGoat: complete the attack scenarios in your sandbox EKS cluster — RBAC misconfig, privileged container escape, exposed dashboard, secrets in env vars.", url: "https://owasp.org/www-project-eks-goat/", time: "3h" },
           { type: "build", label: "Add Falco to your sandbox EKS cluster — wire Falco alerts into the same EventBridge pipeline as GuardDuty. Agent now handles both cloud-layer and runtime container security findings.", time: "2.5h" },
           { type: "read", label: "Kubernetes pod security standards + Kyverno policy library (security policies your agent should check in IaC PRs)", url: "https://kyverno.io/policies/", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
@@ -289,7 +289,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "build", label: "Add supply chain security workflow: on every container image push to ECR, agent runs Inspector scan + Cosign signature verification. Blocks unsigned images from reaching production namespaces via a Kyverno policy + agent-generated PR if policy needs updating.", time: "3.5h" },
-          { type: "read", label: "AWS Builders' Library — 'Implementing least-privilege in AWS' + 'Controlling access with VPC endpoints' (the two most important AWS security architecture patterns for a platform engineer)", url: "https://aws.amazon.com/builders-library/", time: "1.5h" },
+          { type: "read", label: "AWS Builders' Library — 'Amazon's approach to security durign development'", url: "https://www.youtube.com/watch?v=NeR7FhHqDGQ", time: "1h" },
           { type: "read", label: "Finish Chip Huyen — AI Engineering (chs 8–12: production, monitoring, reliability, future)", time: "1.5h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
