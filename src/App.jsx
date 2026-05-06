@@ -18,7 +18,8 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "read", label: "Anthropic — 'Building Effective Agents' essay", url: "https://www.anthropic.com/research/building-effective-agents", time: "1.5h" },
-          { type: "read", label: "Hacking the Cloud — AWS General Knowledge section (attacker's mental model of AWS)", url: "https://hackingthe.cloud/aws/general-knowledge/aws_cli_tips_and_tricks/", time: "1h" },
+          { type: "read", label: "AWS Security Blog — 'IAM policies: what they can and cannot control' (understand the policy model before building on top of it)", url: "https://aws.amazon.com/blogs/security/", time: "1h" },
+          { type: "read", label: "Hacking the Cloud — AWS General Knowledge section (attacker's mental model of AWS)", url: "https://hackingthe.cloud/aws/general-knowledge/", time: "1h" },
           { type: "read", label: "Wiz Blog — 'Twenty Years of Cloud Security Research' (essential historical context)", url: "https://www.wiz.io/blog/twenty-years-of-cloud-security-research", time: "1h" },
           { type: "habit", label: "Subscribe: CloudSecList (cloudseclist.com), AWS Security Digest (awssecuritydigest.com), AWS Security Blog RSS, Hacking the Cloud blog", time: "0.5h" },
           { type: "habit", label: "Follow: Scott Piper, Nick Frichette, Marco Lancini, Clint Gibler on X/LinkedIn", time: "0.5h" },
@@ -56,8 +57,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "course", label: "DeepLearning.AI — 'MCP: Build Rich-Context AI Apps with Anthropic'", url: "https://learn.deeplearning.ai/courses/mcp-build-rich-context-ai-apps-with-anthropic", time: "2h" },
-          { type: "course", label: "Anthropic Academy — 'Intro to MCP'", url: "https://anthropic.skilljar.com/introduction-to-model-context-protocol", time: "1h" },
-          { type: "course", label: "Anthropic Academy — 'MCP Advanced Topics'", url: "https://anthropic.skilljar.com/model-context-protocol-advanced-topics", time: "1h" },
+          { type: "course", label: "Anthropic Academy — 'Intro to MCP' + 'MCP Advanced Topics'", url: "https://anthropic.skilljar.com/", time: "2h" },
           { type: "build", label: "Install the full awslabs/mcp suite — focus on: AWS API server, Security Hub MCP, GuardDuty (via AWS API MCP), CloudTrail. Verify agent can call each.", url: "https://github.com/awslabs/mcp", time: "2.5h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
@@ -83,7 +83,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "build", label: "Complete all 6 levels of flaws.cloud — S3 misconfigurations, EC2 metadata, exposed credentials, IAM privilege escalation. Read the write-up for each level.", url: "http://flaws.cloud/", time: "4h" },
-          { type: "read", label: "AWS Security — 'Understanding IAM policy evaluation' (deep read, not a skim)", url: "https://aws.amazon.com/video/watch/1ae19d026f0/", time: "0.25h" },
+          { type: "read", label: "AWS Security Blog — 'Understanding IAM policy evaluation' (deep read, not a skim)", url: "https://aws.amazon.com/blogs/security/", time: "1.5h" },
           { type: "read", label: "DDIA ch 6 (partitioning) + ch 7 (transactions)", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
@@ -96,7 +96,7 @@ const phases = [
         tasks: [
           { type: "build", label: "flaws2.cloud — complete both the attacker AND defender paths. The defender path is more relevant to your use case but the attacker path builds essential intuition.", url: "http://flaws2.cloud/", time: "3h" },
           { type: "build", label: "Deploy IAM Vulnerable (BishopFox) — explore 5–10 of the 31 privilege escalation pathways. Focus on PassRole, CreatePolicyVersion, and AssumeRole chains.", url: "https://github.com/BishopFox/iam-vulnerable", time: "2.5h" },
-          { type: "read", label: "Hacking the Cloud — IAM section (privilege escalation techniques)", url: "https://hackingthe.cloud/aws/exploitation/iam_privilege_escalation/", time: "1h" },
+          { type: "read", label: "Hacking the Cloud — IAM section (privilege escalation techniques)", url: "https://hackingthe.cloud/aws/exploitation/iam/", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
         checkpoint: "You can walk through 5 IAM privilege escalation paths from memory and explain the detection logic for each. This is the knowledge your agent needs to reason about IAM findings."
@@ -134,7 +134,7 @@ const phases = [
         tasks: [
           { type: "build", label: "Scaffold event-driven trigger: EventBridge rule on GuardDuty HIGH/CRITICAL findings → SQS → Lambda → LangGraph agent invocation", time: "3h" },
           { type: "build", label: "Wire AWS MCP (GuardDuty, Security Hub, CloudTrail tools) as agent tools. Test: agent can fetch a finding, pull associated CloudTrail events, and summarise in plain English.", time: "3h" },
-          { type: "read", label: "Claude Agent SDK workshop", url: "https://www.youtube.com/watch?v=TqC1qOfiVcQ", time: "2h" },
+          { type: "read", label: "Anthropic Academy — 'Claude Agent SDK' module", url: "https://anthropic.skilljar.com/", time: "0.5h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
         checkpoint: "When a test GuardDuty finding fires, the agent automatically investigates and produces a triage summary. No human has typed anything."
@@ -145,7 +145,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "build", label: "Build tool: generate_remediation_pr() — agent identifies the Terraform resource causing the finding (e.g. overly permissive S3 bucket policy), generates a corrective Terraform diff, commits to a branch, opens PR via GitHub MCP with finding context in the PR body.", time: "4h" },
-          { type: "read", label: "AWS Config Best Practices", url: "https://aws.amazon.com/blogs/mt/aws-config-best-practices/", time: "1h" },
+          { type: "read", label: "AWS Security Blog — 'How to use AWS Config rules to enforce security baselines'", url: "https://aws.amazon.com/blogs/security/", time: "1h" },
           { type: "read", label: "DDIA ch 9 (consistency and consensus)", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "1h" },
         ],
@@ -252,7 +252,7 @@ const phases = [
         title: "EKS and container security — extend the agent's domain",
         hours: 7,
         tasks: [
-          { type: "build", label: "EKSGoat: complete the attack scenarios in your sandbox EKS cluster — RBAC misconfig, privileged container escape, exposed dashboard, secrets in env vars.", url: "https://owasp.org/www-project-eks-goat/", time: "3h" },
+          { type: "build", label: "EKSGoat: complete the attack scenarios in your sandbox EKS cluster — RBAC misconfig, privileged container escape, exposed dashboard, secrets in env vars.", url: "https://github.com/amethystcoder/EKSGoat", time: "3h" },
           { type: "build", label: "Add Falco to your sandbox EKS cluster — wire Falco alerts into the same EventBridge pipeline as GuardDuty. Agent now handles both cloud-layer and runtime container security findings.", time: "2.5h" },
           { type: "read", label: "Kubernetes pod security standards + Kyverno policy library (security policies your agent should check in IaC PRs)", url: "https://kyverno.io/policies/", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
@@ -289,7 +289,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "build", label: "Add supply chain security workflow: on every container image push to ECR, agent runs Inspector scan + Cosign signature verification. Blocks unsigned images from reaching production namespaces via a Kyverno policy + agent-generated PR if policy needs updating.", time: "3.5h" },
-          { type: "read", label: "AWS Builders' Library — 'Amazon's approach to security durign development'", url: "https://www.youtube.com/watch?v=NeR7FhHqDGQ", time: "1h" },
+          { type: "read", label: "AWS Builders' Library — 'Implementing least-privilege in AWS' + 'Controlling access with VPC endpoints' (the two most important AWS security architecture patterns for a platform engineer)", url: "https://aws.amazon.com/builders-library/", time: "1.5h" },
           { type: "read", label: "Finish Chip Huyen — AI Engineering (chs 8–12: production, monitoring, reliability, future)", time: "1.5h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
@@ -331,6 +331,65 @@ const phases = [
         checkpoint: "Three+ agent workflows in production or staging. Metrics documented. OWASP Agentic review complete. You're a practitioner who ships, not a learner who studies."
       }
     ]
+  },
+  {
+    id: 4,
+    title: "Post-Plan",
+    subtitle: "AIP-C01 Validation",
+    weeks: "Weeks 25–28",
+    color: "#facc15",
+    accent: "#713f12",
+    description: "A focused 4-week sprint to validate what you already know by mapping your LangGraph + MCP + Bedrock knowledge to AWS's native GenAI stack. You are not learning new concepts — you are learning AWS's terminology and service-specific implementation of patterns you've already built. The exam validates the knowledge; building the agent created it.",
+    weeklyHours: "7–8 hrs/week",
+    focus: ["Bedrock Agents ↔ LangGraph mapping", "Strands Agents + AWS Agent Squad", "Bedrock Guardrails ↔ safety controls", "Domain 3: AI Safety, Security & Governance"],
+    weeks_data: [
+      {
+        week: 25,
+        title: "Kane/Maarek course — Bedrock foundations + Agents",
+        hours: 8,
+        tasks: [
+          { type: "read", label: "AIP-C01 Exam Guide — read all five domains before starting the course. Annotate what maps to things you've already built vs what is genuinely new AWS-specific knowledge. This is your gap analysis going in.", url: "https://docs.aws.amazon.com/pdfs/aws-certification/latest/ai-professional-01/ai-professional-01.pdf", time: "1h" },
+          { type: "course", label: "Ultimate AWS Certified GenAI Developer Professional (Kane/Maarek) — work through the Bedrock foundations sections and the Bedrock Agents deep dive. Do every hands-on lab. Map each concept to your LangGraph equivalent: action group = MCP tool, orchestration trace = LangGraph graph debug output, session attributes = Postgres checkpointer.", url: "https://www.udemy.com/course/ultimate-aws-certified-generative-ai-developer-professional/", time: "6h" },
+          { type: "habit", label: "Weekly reading ritual", time: "1h" },
+        ],
+        checkpoint: "You've completed the Bedrock Agents section with hands-on labs. You can explain every Bedrock Agent concept using the LangGraph terminology you already know — the concepts are identical, only the AWS API surface is new."
+      },
+      {
+        week: 26,
+        title: "Kane/Maarek course — RAG, Knowledge Bases, Guardrails",
+        hours: 8,
+        tasks: [
+          { type: "course", label: "Continue course — Bedrock Knowledge Bases (RAG implementation), vector stores (OpenSearch Serverless, S3 Vectors), embeddings, retrieval tuning. Compare to how your LangGraph agent retrieves Security Lake data — same pattern, different AWS plumbing.", url: "https://www.udemy.com/course/ultimate-aws-certified-generative-ai-developer-professional/", time: "4h" },
+          { type: "course", label: "Continue course — Bedrock Guardrails, content filtering, PII redaction, grounding checks, Bedrock Evaluations. This is Domain 3 (AI Safety, Security, Governance) — the most important domain for your Red Team Ops trajectory. Do the Guardrails lab and intentionally probe its limits.", url: "https://www.udemy.com/course/ultimate-aws-certified-generative-ai-developer-professional/", time: "2.5h" },
+          { type: "build", label: "Hands-on: configure Bedrock Guardrails on a test agent and actively probe each guardrail type. Document what each one catches and — critically — what it doesn't. This groundwork feeds directly into Red Team Ops on agentic systems later.", time: "1h" },
+          { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
+        ],
+        checkpoint: "You've completed RAG + Guardrails sections with labs. You have personal hands-on notes on Guardrails failure modes — not just how to configure them, but where they break."
+      },
+      {
+        week: 27,
+        title: "Kane/Maarek course — Strands, AgentCore, Step Functions + practice exam",
+        hours: 8,
+        tasks: [
+          { type: "course", label: "Continue course — Strands Agents, AWS Agent Squad, Bedrock AgentCore, Bedrock Flows, Prompt Management, Step Functions for ReAct patterns. Pay close attention to when AWS recommends Step Functions (deterministic orchestration) vs Bedrock Agents (LLM-driven) vs Strands (code-first) — this trade-off recurs constantly in exam questions.", url: "https://www.udemy.com/course/ultimate-aws-certified-generative-ai-developer-professional/", time: "4h" },
+          { type: "course", label: "Kane/Maarek included 75-question practice exam — sit it under timed conditions (130 minutes). Treat every wrong answer as a study task: read the explanation, re-read the relevant AWS docs section, note the pattern.", url: "https://www.udemy.com/course/ultimate-aws-certified-generative-ai-developer-professional/", time: "3h" },
+          { type: "habit", label: "Weekly reading ritual", time: "1h" },
+        ],
+        checkpoint: "Full course complete. Practice exam score documented. You know your weak domains — typically cost optimisation (Domain 4) and troubleshooting (Domain 5) for practitioners strong on architecture. Target any domain below 70%."
+      },
+      {
+        week: 28,
+        title: "Targeted gap-fill + sit the exam",
+        hours: 7,
+        tasks: [
+          { type: "read", label: "Targeted gap-fill only — re-read AWS docs for any service you scored poorly on in the practice exam. Focus on: Bedrock Prompt Flows (if weak), SageMaker inference patterns (Domain 2), cost optimisation trade-offs (Domain 4). 30 minutes per weak area maximum.", time: "2h" },
+          { type: "course", label: "AWS Official Practice Question Set — free via AWS Skill Builder. Run through it as a final calibration. Different question style from Kane/Maarek — good to see both before the real exam.", url: "https://skillbuilder.aws/", time: "1.5h" },
+          { type: "course", label: "Sit the AIP-C01 exam — £285 via Pearson VUE or PSI. 75 questions, 130 minutes, passing score 750/1000. You have built everything this exam asks about across 24 weeks of real work and spent 4 weeks mapping it to Bedrock's native implementation. This is validation, not a test of new knowledge.", url: "https://aws.amazon.com/certification/certified-generative-ai-developer-professional/", time: "2.5h" },
+          { type: "habit", label: "Post-exam: update LinkedIn, share your result and architecture write-up in fwd:cloudsec Discord, note what surprised you for others following this path.", time: "1h" },
+        ],
+        checkpoint: "AIP-C01 passed. You've validated end-to-end that you can design, build, secure, and evaluate production-grade agentic AI systems on AWS — from first principles through to AWS-native implementation. Red Team Ops prep begins here."
+      }
+    ]
   }
 ];
 
@@ -339,8 +398,11 @@ const budget = [
   { item: "AI Engineering — Chip Huyen (O'Reilly)", cost: "£35", type: "essential", note: "The AI engineering bible — same as IDP plan" },
   { item: "DDIA 2nd ed — Kleppmann (O'Reilly)", cost: "£40", type: "essential", note: "Distributed systems foundations — same as IDP plan" },
   { item: "Ed Donner — Complete Agentic AI Engineering Course (Udemy, on sale)", cost: "£15", type: "essential", note: "All 6 modules, properly sequenced across the plan" },
+  { item: "AWS Certified Generative AI Developer Professional (AIP-C01) exam fee", cost: "£285", type: "validation", note: "Post-plan validation sprint, Weeks 25–28. Sit only after completing the 24-week plan." },
+  { item: "Ultimate AWS Certified GenAI Developer Professional — Kane & Maarek (Udemy, on sale)", cost: "£15", type: "validation", note: "Primary prep course for Phase 4. Includes 75-question practice exam. Buy during a Udemy sale." },
   { item: "DeepLearning.AI short courses (Agentic AI, LangGraph, MCP)", cost: "Free", type: "free" },
   { item: "Anthropic Academy (13 courses with certs)", cost: "Free", type: "free" },
+  { item: "AIP-C01 Exam Guide + AWS Official Practice Question Set (Skill Builder)", cost: "Free", type: "free" },
   { item: "flaws.cloud + flaws2.cloud (Scott Piper)", cost: "Free", type: "free" },
   { item: "CloudGoat (Rhino Security Labs)", cost: "Free", type: "free" },
   { item: "IAM Vulnerable + Cloudfoxable (BishopFox)", cost: "Free", type: "free" },
@@ -800,6 +862,8 @@ export default function SecurityLearningPlan() {
     .filter(b => b.type === "essential")
     .reduce((sum, b) => sum + parseInt(b.cost.replace("£", "")), 0);
 
+  const totalWithExam = totalEssentialCost + 285;
+
   return (
     <div style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace", background: "#0a0a0f", color: "#e2e8f0", minHeight: "100vh" }}>
       {/* Passphrase Modal */}
@@ -842,7 +906,7 @@ export default function SecurityLearningPlan() {
             Platform Engineer → <span style={{ color: "#f97316" }}>AWS Security</span> + <span style={{ color: "#a78bfa" }}>AI Agent Builder</span>
           </h1>
           <p style={{ color: "#64748b", fontSize: 13, margin: 0, lineHeight: 1.6 }}>
-            24 weeks · 7 hrs/week · GitOps-native GuardDuty triage agent capstone · ~£125 total
+            24 weeks + 4-week AIP-C01 sprint · 7 hrs/week · GuardDuty triage agent capstone · £125 core + £285 exam
           </p>
           <div style={{ display: "flex", gap: 8, marginTop: 20, flexWrap: "wrap" }}>
             {["plan", "budget", "labs", "mcp-stack"].map(tab => (
@@ -966,20 +1030,25 @@ export default function SecurityLearningPlan() {
 
         {activeTab === "budget" && (
           <div>
-            <div style={{ background: "#0f1a0f", border: "1px solid #166534", borderRadius: 6, padding: "16px 20px", marginBottom: 20 }}>
-              <div style={{ fontSize: 11, color: "#4ade80", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Essential spend</div>
+            <div style={{ background: "#0f1a0f", border: "1px solid #166534", borderRadius: 6, padding: "16px 20px", marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: "#4ade80", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Essential spend (24-week plan)</div>
               <div style={{ fontSize: 28, fontWeight: 700, color: "#4ade80" }}>£{totalEssentialCost}</div>
-              <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>Everything else on this list is free. The AWS security lab ecosystem is exceptionally well-resourced for free content.</div>
+              <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>Everything else in the 24-week plan is free.</div>
+            </div>
+            <div style={{ background: "#1a1a0a", border: "1px solid #a16207", borderRadius: 6, padding: "16px 20px", marginBottom: 20 }}>
+              <div style={{ fontSize: 11, color: "#facc15", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Post-plan validation (Phase 4 — AIP-C01)</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: "#facc15" }}>£300</div>
+              <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>£285 exam fee + £15 Kane/Maarek Udemy course (on sale). Sit only after completing Week 24.</div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {budget.map((item, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 14px", borderRadius: 4, background: item.type === "essential" ? "#0f1a0f" : "#0a0a0f", border: `1px solid ${item.type === "essential" ? "#166534" : "#1e293b"}` }}>
-                  <span style={{ padding: "2px 8px", borderRadius: 3, background: item.type === "essential" ? "#14532d" : "#1e293b", color: item.type === "essential" ? "#4ade80" : "#475569", fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", flexShrink: 0, marginTop: 1 }}>{item.type === "essential" ? "PAID" : "FREE"}</span>
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 14px", borderRadius: 4, background: item.type === "essential" ? "#0f1a0f" : item.type === "validation" ? "#1a1a0a" : "#0a0a0f", border: `1px solid ${item.type === "essential" ? "#166534" : item.type === "validation" ? "#a16207" : "#1e293b"}` }}>
+                  <span style={{ padding: "2px 8px", borderRadius: 3, background: item.type === "essential" ? "#14532d" : item.type === "validation" ? "#713f12" : "#1e293b", color: item.type === "essential" ? "#4ade80" : item.type === "validation" ? "#facc15" : "#475569", fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", flexShrink: 0, marginTop: 1 }}>{item.type === "essential" ? "PAID" : item.type === "validation" ? "EXAM" : "FREE"}</span>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, color: item.type === "essential" ? "#cbd5e1" : "#64748b" }}>{item.item}</div>
+                    <div style={{ fontSize: 12, color: item.type === "free" ? "#64748b" : "#cbd5e1" }}>{item.item}</div>
                     {item.note && <div style={{ fontSize: 10, color: "#475569", marginTop: 2 }}>{item.note}</div>}
                   </div>
-                  <span style={{ fontWeight: 700, fontSize: 13, color: item.type === "essential" ? "#4ade80" : "#475569", flexShrink: 0 }}>{item.cost}</span>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: item.type === "essential" ? "#4ade80" : item.type === "validation" ? "#facc15" : "#475569", flexShrink: 0 }}>{item.cost}</span>
                 </div>
               ))}
             </div>
