@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState } from "react";
 
 const phases = [
   {
@@ -18,7 +18,8 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "read", label: "Anthropic — 'Building Effective Agents' essay", url: "https://www.anthropic.com/research/building-effective-agents", time: "1.5h" },
-          { type: "read", label: "Hacking the Cloud — AWS General Knowledge section (attacker's mental model of AWS)", url: "https://hackingthe.cloud/aws/general-knowledge/aws_cli_tips_and_tricks/", time: "1h" },
+          { type: "read", label: "AWS Security Blog — 'IAM policies: what they can and cannot control' (understand the policy model before building on top of it)", url: "https://aws.amazon.com/blogs/security/", time: "1h" },
+          { type: "read", label: "Hacking the Cloud — AWS General Knowledge section (attacker's mental model of AWS)", url: "https://hackingthe.cloud/aws/general-knowledge/", time: "1h" },
           { type: "read", label: "Wiz Blog — 'Twenty Years of Cloud Security Research' (essential historical context)", url: "https://www.wiz.io/blog/twenty-years-of-cloud-security-research", time: "1h" },
           { type: "habit", label: "Subscribe: CloudSecList (cloudseclist.com), AWS Security Digest (awssecuritydigest.com), AWS Security Blog RSS, Hacking the Cloud blog", time: "0.5h" },
           { type: "habit", label: "Follow: Scott Piper, Nick Frichette, Marco Lancini, Clint Gibler on X/LinkedIn", time: "0.5h" },
@@ -56,8 +57,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "course", label: "DeepLearning.AI — 'MCP: Build Rich-Context AI Apps with Anthropic'", url: "https://learn.deeplearning.ai/courses/mcp-build-rich-context-ai-apps-with-anthropic", time: "2h" },
-          { type: "course", label: "Anthropic Academy — 'Intro to MCP'", url: "https://anthropic.skilljar.com/introduction-to-model-context-protocol", time: "1h" },
-          { type: "course", label: "Anthropic Academy — 'MCP Advanced Topics'", url: "https://anthropic.skilljar.com/model-context-protocol-advanced-topics", time: "1h" },
+          { type: "course", label: "Anthropic Academy — 'Intro to MCP' + 'MCP Advanced Topics'", url: "https://anthropic.skilljar.com/", time: "2h" },
           { type: "build", label: "Install the full awslabs/mcp suite — focus on: AWS API server, Security Hub MCP, GuardDuty (via AWS API MCP), CloudTrail. Verify agent can call each.", url: "https://github.com/awslabs/mcp", time: "2.5h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
@@ -83,7 +83,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "build", label: "Complete all 6 levels of flaws.cloud — S3 misconfigurations, EC2 metadata, exposed credentials, IAM privilege escalation. Read the write-up for each level.", url: "http://flaws.cloud/", time: "4h" },
-          { type: "read", label: "AWS Security — 'Understanding IAM policy evaluation' (deep read, not a skim)", url: "https://aws.amazon.com/video/watch/1ae19d026f0/", time: "0.25h" },
+          { type: "read", label: "AWS Security Blog — 'Understanding IAM policy evaluation' (deep read, not a skim)", url: "https://aws.amazon.com/blogs/security/", time: "1.5h" },
           { type: "read", label: "DDIA ch 6 (partitioning) + ch 7 (transactions)", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
@@ -96,7 +96,7 @@ const phases = [
         tasks: [
           { type: "build", label: "flaws2.cloud — complete both the attacker AND defender paths. The defender path is more relevant to your use case but the attacker path builds essential intuition.", url: "http://flaws2.cloud/", time: "3h" },
           { type: "build", label: "Deploy IAM Vulnerable (BishopFox) — explore 5–10 of the 31 privilege escalation pathways. Focus on PassRole, CreatePolicyVersion, and AssumeRole chains.", url: "https://github.com/BishopFox/iam-vulnerable", time: "2.5h" },
-          { type: "read", label: "Hacking the Cloud — IAM section (privilege escalation techniques)", url: "https://hackingthe.cloud/aws/exploitation/iam_privilege_escalation/", time: "1h" },
+          { type: "read", label: "Hacking the Cloud — IAM section (privilege escalation techniques)", url: "https://hackingthe.cloud/aws/exploitation/iam/", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
         checkpoint: "You can walk through 5 IAM privilege escalation paths from memory and explain the detection logic for each. This is the knowledge your agent needs to reason about IAM findings."
@@ -134,7 +134,7 @@ const phases = [
         tasks: [
           { type: "build", label: "Scaffold event-driven trigger: EventBridge rule on GuardDuty HIGH/CRITICAL findings → SQS → Lambda → LangGraph agent invocation", time: "3h" },
           { type: "build", label: "Wire AWS MCP (GuardDuty, Security Hub, CloudTrail tools) as agent tools. Test: agent can fetch a finding, pull associated CloudTrail events, and summarise in plain English.", time: "3h" },
-          { type: "read", label: "Claude Agent SDK workshop", url: "https://www.youtube.com/watch?v=TqC1qOfiVcQ", time: "2h" },
+          { type: "read", label: "Anthropic Academy — 'Claude Agent SDK' module", url: "https://anthropic.skilljar.com/", time: "0.5h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
         checkpoint: "When a test GuardDuty finding fires, the agent automatically investigates and produces a triage summary. No human has typed anything."
@@ -145,7 +145,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "build", label: "Build tool: generate_remediation_pr() — agent identifies the Terraform resource causing the finding (e.g. overly permissive S3 bucket policy), generates a corrective Terraform diff, commits to a branch, opens PR via GitHub MCP with finding context in the PR body.", time: "4h" },
-          { type: "read", label: "AWS Config Best Practices", url: "https://aws.amazon.com/blogs/mt/aws-config-best-practices/", time: "1h" },
+          { type: "read", label: "AWS Security Blog — 'How to use AWS Config rules to enforce security baselines'", url: "https://aws.amazon.com/blogs/security/", time: "1h" },
           { type: "read", label: "DDIA ch 9 (consistency and consensus)", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "1h" },
         ],
@@ -252,7 +252,7 @@ const phases = [
         title: "EKS and container security — extend the agent's domain",
         hours: 7,
         tasks: [
-          { type: "build", label: "EKSGoat: complete the attack scenarios in your sandbox EKS cluster — RBAC misconfig, privileged container escape, exposed dashboard, secrets in env vars.", url: "https://owasp.org/www-project-eks-goat/", time: "3h" },
+          { type: "build", label: "EKSGoat: complete the attack scenarios in your sandbox EKS cluster — RBAC misconfig, privileged container escape, exposed dashboard, secrets in env vars.", url: "https://github.com/amethystcoder/EKSGoat", time: "3h" },
           { type: "build", label: "Add Falco to your sandbox EKS cluster — wire Falco alerts into the same EventBridge pipeline as GuardDuty. Agent now handles both cloud-layer and runtime container security findings.", time: "2.5h" },
           { type: "read", label: "Kubernetes pod security standards + Kyverno policy library (security policies your agent should check in IaC PRs)", url: "https://kyverno.io/policies/", time: "1h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
@@ -289,7 +289,7 @@ const phases = [
         hours: 7,
         tasks: [
           { type: "build", label: "Add supply chain security workflow: on every container image push to ECR, agent runs Inspector scan + Cosign signature verification. Blocks unsigned images from reaching production namespaces via a Kyverno policy + agent-generated PR if policy needs updating.", time: "3.5h" },
-          { type: "read", label: "AWS Builders' Library — 'Amazon's approach to security durign development'", url: "https://www.youtube.com/watch?v=NeR7FhHqDGQ", time: "1h" },
+          { type: "read", label: "AWS Builders' Library — 'Implementing least-privilege in AWS' + 'Controlling access with VPC endpoints' (the two most important AWS security architecture patterns for a platform engineer)", url: "https://aws.amazon.com/builders-library/", time: "1.5h" },
           { type: "read", label: "Finish Chip Huyen — AI Engineering (chs 8–12: production, monitoring, reliability, future)", time: "1.5h" },
           { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
         ],
@@ -331,6 +331,65 @@ const phases = [
         checkpoint: "Three+ agent workflows in production or staging. Metrics documented. OWASP Agentic review complete. You're a practitioner who ships, not a learner who studies."
       }
     ]
+  },
+  {
+    id: 4,
+    title: "Post-Plan",
+    subtitle: "AIP-C01 Validation",
+    weeks: "Weeks 25–28",
+    color: "#facc15",
+    accent: "#713f12",
+    description: "A focused 4-week sprint to validate what you already know by mapping your LangGraph + MCP + Bedrock knowledge to AWS's native GenAI stack. You are not learning new concepts — you are learning AWS's terminology and service-specific implementation of patterns you've already built. The exam validates the knowledge; building the agent created it.",
+    weeklyHours: "7–8 hrs/week",
+    focus: ["Bedrock Agents ↔ LangGraph mapping", "Strands Agents + AWS Agent Squad", "Bedrock Guardrails ↔ safety controls", "Domain 3: AI Safety, Security & Governance"],
+    weeks_data: [
+      {
+        week: 25,
+        title: "Kane/Maarek course — Bedrock foundations + Agents",
+        hours: 8,
+        tasks: [
+          { type: "read", label: "AIP-C01 Exam Guide — read all five domains before starting the course. Annotate what maps to things you've already built vs what is genuinely new AWS-specific knowledge. This is your gap analysis going in.", url: "https://docs.aws.amazon.com/pdfs/aws-certification/latest/ai-professional-01/ai-professional-01.pdf", time: "1h" },
+          { type: "course", label: "Ultimate AWS Certified GenAI Developer Professional (Kane/Maarek) — work through the Bedrock foundations sections and the Bedrock Agents deep dive. Do every hands-on lab. Map each concept to your LangGraph equivalent: action group = MCP tool, orchestration trace = LangGraph graph debug output, session attributes = Postgres checkpointer.", url: "https://www.udemy.com/course/ultimate-aws-certified-generative-ai-developer-professional/", time: "6h" },
+          { type: "habit", label: "Weekly reading ritual", time: "1h" },
+        ],
+        checkpoint: "You've completed the Bedrock Agents section with hands-on labs. You can explain every Bedrock Agent concept using the LangGraph terminology you already know — the concepts are identical, only the AWS API surface is new."
+      },
+      {
+        week: 26,
+        title: "Kane/Maarek course — RAG, Knowledge Bases, Guardrails",
+        hours: 8,
+        tasks: [
+          { type: "course", label: "Continue course — Bedrock Knowledge Bases (RAG implementation), vector stores (OpenSearch Serverless, S3 Vectors), embeddings, retrieval tuning. Compare to how your LangGraph agent retrieves Security Lake data — same pattern, different AWS plumbing.", url: "https://www.udemy.com/course/ultimate-aws-certified-generative-ai-developer-professional/", time: "4h" },
+          { type: "course", label: "Continue course — Bedrock Guardrails, content filtering, PII redaction, grounding checks, Bedrock Evaluations. This is Domain 3 (AI Safety, Security, Governance) — the most important domain for your Red Team Ops trajectory. Do the Guardrails lab and intentionally probe its limits.", url: "https://www.udemy.com/course/ultimate-aws-certified-generative-ai-developer-professional/", time: "2.5h" },
+          { type: "build", label: "Hands-on: configure Bedrock Guardrails on a test agent and actively probe each guardrail type. Document what each one catches and — critically — what it doesn't. This groundwork feeds directly into Red Team Ops on agentic systems later.", time: "1h" },
+          { type: "habit", label: "Weekly reading ritual", time: "0.5h" },
+        ],
+        checkpoint: "You've completed RAG + Guardrails sections with labs. You have personal hands-on notes on Guardrails failure modes — not just how to configure them, but where they break."
+      },
+      {
+        week: 27,
+        title: "Kane/Maarek course — Strands, AgentCore, Step Functions + practice exam",
+        hours: 8,
+        tasks: [
+          { type: "course", label: "Continue course — Strands Agents, AWS Agent Squad, Bedrock AgentCore, Bedrock Flows, Prompt Management, Step Functions for ReAct patterns. Pay close attention to when AWS recommends Step Functions (deterministic orchestration) vs Bedrock Agents (LLM-driven) vs Strands (code-first) — this trade-off recurs constantly in exam questions.", url: "https://www.udemy.com/course/ultimate-aws-certified-generative-ai-developer-professional/", time: "4h" },
+          { type: "course", label: "Kane/Maarek included 75-question practice exam — sit it under timed conditions (130 minutes). Treat every wrong answer as a study task: read the explanation, re-read the relevant AWS docs section, note the pattern.", url: "https://www.udemy.com/course/ultimate-aws-certified-generative-ai-developer-professional/", time: "3h" },
+          { type: "habit", label: "Weekly reading ritual", time: "1h" },
+        ],
+        checkpoint: "Full course complete. Practice exam score documented. You know your weak domains — typically cost optimisation (Domain 4) and troubleshooting (Domain 5) for practitioners strong on architecture. Target any domain below 70%."
+      },
+      {
+        week: 28,
+        title: "Targeted gap-fill + sit the exam",
+        hours: 7,
+        tasks: [
+          { type: "read", label: "Targeted gap-fill only — re-read AWS docs for any service you scored poorly on in the practice exam. Focus on: Bedrock Prompt Flows (if weak), SageMaker inference patterns (Domain 2), cost optimisation trade-offs (Domain 4). 30 minutes per weak area maximum.", time: "2h" },
+          { type: "course", label: "AWS Official Practice Question Set — free via AWS Skill Builder. Run through it as a final calibration. Different question style from Kane/Maarek — good to see both before the real exam.", url: "https://skillbuilder.aws/", time: "1.5h" },
+          { type: "course", label: "Sit the AIP-C01 exam — £285 via Pearson VUE or PSI. 75 questions, 130 minutes, passing score 750/1000. You have built everything this exam asks about across 24 weeks of real work and spent 4 weeks mapping it to Bedrock's native implementation. This is validation, not a test of new knowledge.", url: "https://aws.amazon.com/certification/certified-generative-ai-developer-professional/", time: "2.5h" },
+          { type: "habit", label: "Post-exam: update LinkedIn, share your result and architecture write-up in fwd:cloudsec Discord, note what surprised you for others following this path.", time: "1h" },
+        ],
+        checkpoint: "AIP-C01 passed. You've validated end-to-end that you can design, build, secure, and evaluate production-grade agentic AI systems on AWS — from first principles through to AWS-native implementation. Red Team Ops prep begins here."
+      }
+    ]
   }
 ];
 
@@ -339,8 +398,11 @@ const budget = [
   { item: "AI Engineering — Chip Huyen (O'Reilly)", cost: "£35", type: "essential", note: "The AI engineering bible — same as IDP plan" },
   { item: "DDIA 2nd ed — Kleppmann (O'Reilly)", cost: "£40", type: "essential", note: "Distributed systems foundations — same as IDP plan" },
   { item: "Ed Donner — Complete Agentic AI Engineering Course (Udemy, on sale)", cost: "£15", type: "essential", note: "All 6 modules, properly sequenced across the plan" },
+  { item: "AWS Certified Generative AI Developer Professional (AIP-C01) exam fee", cost: "£285", type: "validation", note: "Post-plan validation sprint, Weeks 25–28. Sit only after completing the 24-week plan." },
+  { item: "Ultimate AWS Certified GenAI Developer Professional — Kane & Maarek (Udemy, on sale)", cost: "£15", type: "validation", note: "Primary prep course for Phase 4. Includes 75-question practice exam. Buy during a Udemy sale." },
   { item: "DeepLearning.AI short courses (Agentic AI, LangGraph, MCP)", cost: "Free", type: "free" },
   { item: "Anthropic Academy (13 courses with certs)", cost: "Free", type: "free" },
+  { item: "AIP-C01 Exam Guide + AWS Official Practice Question Set (Skill Builder)", cost: "Free", type: "free" },
   { item: "flaws.cloud + flaws2.cloud (Scott Piper)", cost: "Free", type: "free" },
   { item: "CloudGoat (Rhino Security Labs)", cost: "Free", type: "free" },
   { item: "IAM Vulnerable + Cloudfoxable (BishopFox)", cost: "Free", type: "free" },
@@ -380,469 +442,32 @@ const typeColors = {
   habit: { bg: "#2a2a1a", border: "#facc15", label: "HABIT", labelBg: "#713f12" },
 };
 
-// --- Utility functions ---
-
-export async function deriveToken(passphrase) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(passphrase);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
-export function getTaskId(phaseIndex, weekNumber, taskIndex) {
-  return `p${phaseIndex}-w${weekNumber}-t${taskIndex}`;
-}
-
-export function mergeState(local, remote) {
-  if (Object.keys(local).length === 0) {
-    return { ...remote };
-  }
-  const merged = { ...remote };
-  for (const [key, value] of Object.entries(local)) {
-    if (value) merged[key] = true;
-  }
-  return merged;
-}
-
-// --- Custom hook ---
-
-const LS_TOKEN_KEY = "lp-user-token";
-const LS_STATE_KEY = "lp-completion-state";
-const DEBOUNCE_MS = 2000;
-const RETRY_INTERVAL_MS = 30000;
-const MAX_RETRIES = 3;
-
-function readLocalStorage(key) {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writeLocalStorage(key, value) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // localStorage unavailable — silently ignore
-  }
-}
-
-function removeLocalStorage(key) {
-  try {
-    localStorage.removeItem(key);
-  } catch {
-    // localStorage unavailable — silently ignore
-  }
-}
-
-function parseCompletionState(raw) {
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-      return parsed;
-    }
-    return {};
-  } catch {
-    return {};
-  }
-}
-
-export function useCompletionState(phases) {
-  const [completionState, setCompletionState] = useState(() => {
-    const raw = readLocalStorage(LS_STATE_KEY);
-    return parseCompletionState(raw);
-  });
-  const [userToken, setUserToken] = useState(() => {
-    const token = readLocalStorage(LS_TOKEN_KEY);
-    return token && /^[0-9a-f]{64}$/.test(token) ? token : null;
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [syncError, setSyncError] = useState(null);
-
-  const debounceTimer = useRef(null);
-  const retryTimer = useRef(null);
-  const retryCount = useRef(0);
-  const pendingState = useRef(null);
-  const tokenRef = useRef(userToken);
-
-  useEffect(() => {
-    tokenRef.current = userToken;
-  }, [userToken]);
-
-  const syncToApi = useCallback(async (token, state) => {
-    if (!token) return;
-    setIsSyncing(true);
-    try {
-      const res = await fetch("/api/progress", {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(state),
-      });
-      if (!res.ok) {
-        throw new Error(`Sync failed: ${res.status}`);
-      }
-      setSyncError(null);
-      retryCount.current = 0;
-      pendingState.current = null;
-    } catch (err) {
-      setSyncError(err.message || "Sync failed");
-      pendingState.current = state;
-    } finally {
-      setIsSyncing(false);
-    }
-  }, []);
-
-  const scheduleDebouncedSync = useCallback((token, state) => {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    debounceTimer.current = setTimeout(() => {
-      debounceTimer.current = null;
-      syncToApi(token, state);
-    }, DEBOUNCE_MS);
-  }, [syncToApi]);
-
-  useEffect(() => {
-    retryTimer.current = setInterval(() => {
-      if (pendingState.current && tokenRef.current && retryCount.current < MAX_RETRIES) {
-        retryCount.current += 1;
-        syncToApi(tokenRef.current, pendingState.current);
-      }
-    }, RETRY_INTERVAL_MS);
-    return () => {
-      if (retryTimer.current) clearInterval(retryTimer.current);
-    };
-  }, [syncToApi]);
-
-  useEffect(() => {
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!userToken) return;
-    let cancelled = false;
-    setIsLoading(true);
-
-    (async () => {
-      try {
-        const res = await fetch("/api/progress", {
-          method: "GET",
-          headers: { "Authorization": `Bearer ${userToken}` },
-        });
-        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-        const remote = await res.json();
-        if (!cancelled) {
-          setCompletionState(prev => {
-            const merged = mergeState(prev, remote);
-            writeLocalStorage(LS_STATE_KEY, JSON.stringify(merged));
-            return merged;
-          });
-        }
-      } catch {
-        // API unreachable — continue with local cache
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [userToken]);
-
-  const toggleTask = useCallback((taskId) => {
-    setCompletionState(prev => {
-      const next = { ...prev };
-      if (next[taskId]) {
-        delete next[taskId];
-      } else {
-        next[taskId] = true;
-      }
-      writeLocalStorage(LS_STATE_KEY, JSON.stringify(next));
-      scheduleDebouncedSync(tokenRef.current, next);
-      return next;
-    });
-  }, [scheduleDebouncedSync]);
-
-  const setPassphrase = useCallback(async (passphrase) => {
-    const token = await deriveToken(passphrase);
-    setUserToken(token);
-    writeLocalStorage(LS_TOKEN_KEY, token);
-  }, []);
-
-  const resetPhase = useCallback((phaseIndex) => {
-    setCompletionState(prev => {
-      const prefix = `p${phaseIndex}-`;
-      const next = {};
-      for (const [key, value] of Object.entries(prev)) {
-        if (!key.startsWith(prefix)) {
-          next[key] = value;
-        }
-      }
-      writeLocalStorage(LS_STATE_KEY, JSON.stringify(next));
-      scheduleDebouncedSync(tokenRef.current, next);
-      return next;
-    });
-  }, [scheduleDebouncedSync]);
-
-  const switchIdentity = useCallback(() => {
-    setUserToken(null);
-    setCompletionState({});
-    removeLocalStorage(LS_TOKEN_KEY);
-    removeLocalStorage(LS_STATE_KEY);
-    setSyncError(null);
-    pendingState.current = null;
-    retryCount.current = 0;
-  }, []);
-
-  return {
-    completionState,
-    userToken,
-    isLoading,
-    isSyncing,
-    syncError,
-    toggleTask,
-    setPassphrase,
-    resetPhase,
-    switchIdentity,
-  };
-}
-
-// --- UI Components ---
-
-export function PassphraseModal({ onSubmit, userToken }) {
-  const [value, setValue] = useState("");
-  const [error, setError] = useState(null);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (value.length < 8) {
-      setError("Passphrase must be at least 8 characters");
-      return;
-    }
-    setError(null);
-    onSubmit(value);
-  };
-
-  return (
-    <div style={{
-      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-      background: "rgba(0, 0, 0, 0.75)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      zIndex: 9999, fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-    }}>
-      <div style={{
-        background: "#0f0f1a", border: "1px solid #1e293b", borderRadius: 8,
-        padding: "32px", width: "100%", maxWidth: 400, margin: "0 16px",
-      }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0", margin: "0 0 8px", letterSpacing: "-0.01em" }}>
-          {userToken ? "Switch identity" : "Start tracking"}
-        </h2>
-        <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 24px", lineHeight: 1.6 }}>
-          Enter a passphrase to sync your progress across devices
-        </p>
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="passphrase-input" style={{ display: "block", fontSize: 11, color: "#94a3b8", marginBottom: 6, letterSpacing: "0.05em" }}>
-            Passphrase
-          </label>
-          <input
-            id="passphrase-input"
-            type="password"
-            value={value}
-            onChange={(e) => { setValue(e.target.value); if (error) setError(null); }}
-            placeholder="At least 8 characters"
-            autoFocus
-            style={{
-              width: "100%", padding: "10px 12px", borderRadius: 4,
-              border: `1px solid ${error ? "#ef4444" : "#1e293b"}`,
-              background: "#0a0a0f", color: "#e2e8f0", fontSize: 13,
-              fontFamily: "inherit", outline: "none", boxSizing: "border-box",
-              transition: "border-color 0.15s",
-            }}
-          />
-          {error && <p style={{ fontSize: 11, color: "#ef4444", margin: "6px 0 0" }}>{error}</p>}
-          <button type="submit" style={{
-            width: "100%", padding: "10px 16px", marginTop: 16, borderRadius: 4,
-            border: "1px solid #60a5fa", background: "#1e3a5f", color: "#60a5fa",
-            fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
-            letterSpacing: "0.02em", transition: "all 0.15s",
-          }}>
-            {userToken ? "Sign in" : "Start tracking"}
-          </button>
-        </form>
-        {userToken && (
-          <p style={{ fontSize: 11, color: "#475569", margin: "16px 0 0", textAlign: "center" }}>
-            Signing in with a new passphrase will replace your local progress.
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export function TaskCheckbox({ checked, onChange, phaseColor, taskLabel }) {
-  return (
-    <button
-      role="checkbox"
-      aria-checked={checked}
-      aria-label={checked ? `Mark ${taskLabel} as incomplete` : `Mark ${taskLabel} as complete`}
-      onClick={onChange}
-      style={{
-        width: 44, height: 44, minWidth: 44, minHeight: 44, padding: 0,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        borderRadius: 4, border: `2px solid ${checked ? phaseColor : "#475569"}`,
-        background: checked ? phaseColor : "transparent",
-        cursor: "pointer", transition: "all 0.15s", flexShrink: 0, fontFamily: "inherit",
-      }}
-    >
-      {checked && (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 9L7.5 12.5L14 5.5" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      )}
-    </button>
-  );
-}
-
-export function WeekProgressBar({ completed, total, phaseColor }) {
-  const ratio = total > 0 ? completed / total : 0;
-  const isComplete = total > 0 && completed === total;
-
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-      <span style={{
-        position: "relative", width: 60, height: 6, borderRadius: 3,
-        background: "#1e293b", overflow: "hidden", display: "inline-block",
-      }}>
-        <span style={{
-          position: "absolute", top: 0, left: 0, height: "100%",
-          width: `${ratio * 100}%`, borderRadius: 3, background: phaseColor,
-          opacity: isComplete ? 1 : 0.7,
-          boxShadow: isComplete ? `0 0 6px ${phaseColor}` : "none",
-          transition: "width 0.2s, opacity 0.2s, box-shadow 0.2s",
-        }} />
-      </span>
-      <span style={{
-        fontSize: 10, fontFamily: "inherit",
-        color: isComplete ? phaseColor : "#94a3b8", whiteSpace: "nowrap",
-      }}>
-        {completed}/{total}
-      </span>
-    </span>
-  );
-}
-
-export function ResetPhaseButton({ phaseTitle, onReset }) {
-  const [confirming, setConfirming] = useState(false);
-
-  if (confirming) {
-    return (
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 11, color: "#ef4444", lineHeight: 1.4 }}>
-          Reset all progress for {phaseTitle}? This cannot be undone.
-        </span>
-        <span style={{ display: "inline-flex", gap: 6 }}>
-          <button onClick={() => { onReset(); setConfirming(false); }} style={{
-            padding: "4px 10px", borderRadius: 4, border: "1px solid #ef4444",
-            background: "#3b1111", color: "#ef4444", fontSize: 11, fontWeight: 600,
-            fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s",
-          }}>Confirm</button>
-          <button onClick={() => setConfirming(false)} style={{
-            padding: "4px 10px", borderRadius: 4, border: "1px solid #1e293b",
-            background: "transparent", color: "#94a3b8", fontSize: 11, fontWeight: 600,
-            fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s",
-          }}>Cancel</button>
-        </span>
-      </span>
-    );
-  }
-
-  return (
-    <button onClick={() => setConfirming(true)} style={{
-      padding: "4px 8px", borderRadius: 4, border: "none", background: "transparent",
-      color: "#64748b", fontSize: 11, fontFamily: "inherit", cursor: "pointer",
-      transition: "color 0.15s",
-    }}>
-      Reset progress
-    </button>
-  );
-}
-
 export default function SecurityLearningPlan() {
   const [activePhase, setActivePhase] = useState(0);
   const [expandedWeek, setExpandedWeek] = useState(null);
   const [activeTab, setActiveTab] = useState("plan");
-  const [showPassphraseModal, setShowPassphraseModal] = useState(false);
-
-  const {
-    completionState,
-    userToken,
-    isLoading,
-    isSyncing,
-    syncError,
-    toggleTask,
-    setPassphrase,
-    resetPhase,
-    switchIdentity,
-  } = useCompletionState(phases);
-
-  const [dismissedError, setDismissedError] = useState(null);
 
   const phase = phases[activePhase];
   const totalEssentialCost = budget
     .filter(b => b.type === "essential")
     .reduce((sum, b) => sum + parseInt(b.cost.replace("£", "")), 0);
 
+  const totalWithExam = totalEssentialCost + 285;
+
   return (
     <div style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace", background: "#0a0a0f", color: "#e2e8f0", minHeight: "100vh" }}>
-      {/* Passphrase Modal */}
-      {(userToken === null || showPassphraseModal) && (
-        <PassphraseModal
-          onSubmit={(passphrase) => { setPassphrase(passphrase); setShowPassphraseModal(false); }}
-          userToken={userToken}
-        />
-      )}
-
-      {/* Sync status indicator */}
-      {isSyncing && (
-        <div style={{ position: "fixed", top: 8, right: 16, padding: "6px 12px", borderRadius: 4, background: "#1e3a5f", border: "1px solid #60a5fa40", color: "#60a5fa", fontSize: 10, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.05em", zIndex: 9998, display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#60a5fa", animation: "pulse 1s infinite" }} />
-          Syncing…
-        </div>
-      )}
-
-      {/* Sync error display */}
-      {syncError && syncError !== dismissedError && (
-        <div style={{ position: "fixed", top: 8, right: 16, padding: "8px 12px", borderRadius: 4, background: "#3b1111", border: "1px solid #ef444440", color: "#ef4444", fontSize: 11, fontFamily: "'JetBrains Mono', monospace", zIndex: 9998, display: "flex", alignItems: "center", gap: 8, maxWidth: 320 }}>
-          <span style={{ flex: 1, lineHeight: 1.4 }}>Sync error: {syncError}</span>
-          <button onClick={() => setDismissedError(syncError)} style={{ background: "transparent", border: "none", color: "#ef4444", fontSize: 14, cursor: "pointer", padding: "0 2px", fontFamily: "inherit", flexShrink: 0 }} aria-label="Dismiss sync error">×</button>
-        </div>
-      )}
-
       {/* Header */}
       <div style={{ background: "linear-gradient(135deg, #0f0f1a 0%, #1a0a0a 50%, #0a0f1a 100%)", borderBottom: "1px solid #1e293b", padding: "32px 24px 24px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#f97316", boxShadow: "0 0 8px #f97316" }} />
             <span style={{ color: "#64748b", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase" }}>6-Month Learning Plan — AWS Security Edition</span>
-            {userToken && (
-              <button onClick={() => setShowPassphraseModal(true)} style={{ marginLeft: "auto", padding: "4px 10px", borderRadius: 4, border: "1px solid #1e293b", background: "transparent", color: "#64748b", fontSize: 10, fontFamily: "inherit", cursor: "pointer", letterSpacing: "0.05em", transition: "all 0.15s" }}>
-                Switch identity
-              </button>
-            )}
           </div>
           <h1 style={{ fontSize: "clamp(20px, 4vw, 30px)", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
             Platform Engineer → <span style={{ color: "#f97316" }}>AWS Security</span> + <span style={{ color: "#a78bfa" }}>AI Agent Builder</span>
           </h1>
           <p style={{ color: "#64748b", fontSize: 13, margin: 0, lineHeight: 1.6 }}>
-            24 weeks · 7 hrs/week · GitOps-native GuardDuty triage agent capstone · ~£125 total
+            24 weeks + 4-week AIP-C01 sprint · 7 hrs/week · GuardDuty triage agent capstone · £125 core + £285 exam
           </p>
           <div style={{ display: "flex", gap: 8, marginTop: 20, flexWrap: "wrap" }}>
             {["plan", "budget", "labs", "mcp-stack"].map(tab => (
@@ -894,12 +519,6 @@ export default function SecurityLearningPlan() {
                 <div style={{ textAlign: "right" }}>
                   <div style={{ color: phase.color, fontSize: 20, fontWeight: 700 }}>{phase.weeklyHours}</div>
                   <div style={{ color: "#64748b", fontSize: 10 }}>per week</div>
-                  <div style={{ marginTop: 8 }}>
-                    <ResetPhaseButton
-                      phaseTitle={phase.title + ": " + phase.subtitle}
-                      onReset={() => resetPhase(activePhase)}
-                    />
-                  </div>
                 </div>
               </div>
             </div>
@@ -907,16 +526,11 @@ export default function SecurityLearningPlan() {
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {phase.weeks_data.map((w) => {
                 const isOpen = expandedWeek === w.week;
-                const weekCompleted = w.tasks.reduce((count, _task, tIdx) => {
-                  const tid = getTaskId(activePhase, w.week, tIdx);
-                  return count + (completionState[tid] ? 1 : 0);
-                }, 0);
                 return (
                   <div key={w.week} style={{ border: `1px solid ${isOpen ? phase.color + "50" : "#1e293b"}`, borderRadius: 6, background: isOpen ? `${phase.color}08` : "#0f0f1a", overflow: "hidden", transition: "all 0.15s" }}>
                     <button onClick={() => setExpandedWeek(isOpen ? null : w.week)} style={{ width: "100%", padding: "14px 16px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, textAlign: "left", fontFamily: "inherit", color: "inherit" }}>
                       <span style={{ width: 48, height: 24, borderRadius: 3, background: `${phase.color}20`, border: `1px solid ${phase.color}50`, color: phase.color, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>W{w.week}</span>
                       <span style={{ flex: 1, fontSize: 13, fontWeight: isOpen ? 600 : 400, color: isOpen ? "#e2e8f0" : "#94a3b8" }}>{w.title}</span>
-                      <WeekProgressBar completed={weekCompleted} total={w.tasks.length} phaseColor={phase.color} />
                       <span style={{ color: "#64748b", fontSize: 11 }}>{w.hours}h</span>
                       <span style={{ color: "#64748b", fontSize: 14, transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.15s" }}>›</span>
                     </button>
@@ -925,18 +539,11 @@ export default function SecurityLearningPlan() {
                         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
                           {w.tasks.map((task, i) => {
                             const tc = typeColors[task.type];
-                            const taskId = getTaskId(activePhase, w.week, i);
                             return (
-                              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 4, background: tc.bg, border: `1px solid ${tc.border}30` }}>
-                                <TaskCheckbox
-                                  checked={completionState[taskId] || false}
-                                  onChange={() => toggleTask(taskId)}
-                                  phaseColor={phase.color}
-                                  taskLabel={task.label}
-                                />
+                              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 4, background: tc.bg, border: `1px solid ${tc.border}30` }}>
                                 <span style={{ padding: "2px 7px", borderRadius: 2, background: tc.labelBg, color: "#fff", fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", flexShrink: 0, marginTop: 1 }}>{tc.label}</span>
-                                <span style={{ flex: 1, fontSize: 12, color: completionState[taskId] ? "#64748b" : "#cbd5e1", lineHeight: 1.5, textDecoration: completionState[taskId] ? "line-through" : "none", transition: "all 0.15s" }}>
-                                  {task.url ? <a href={task.url} target="_blank" rel="noopener noreferrer" style={{ color: completionState[taskId] ? "#475569" : "#93c5fd", textDecoration: "none" }}>{task.label}</a> : task.label}
+                                <span style={{ flex: 1, fontSize: 12, color: "#cbd5e1", lineHeight: 1.5 }}>
+                                  {task.url ? <a href={task.url} target="_blank" rel="noopener noreferrer" style={{ color: "#93c5fd", textDecoration: "none" }}>{task.label}</a> : task.label}
                                 </span>
                                 {task.time && <span style={{ color: "#475569", fontSize: 10, flexShrink: 0, marginTop: 2 }}>{task.time}</span>}
                               </div>
@@ -966,20 +573,25 @@ export default function SecurityLearningPlan() {
 
         {activeTab === "budget" && (
           <div>
-            <div style={{ background: "#0f1a0f", border: "1px solid #166534", borderRadius: 6, padding: "16px 20px", marginBottom: 20 }}>
-              <div style={{ fontSize: 11, color: "#4ade80", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Essential spend</div>
+            <div style={{ background: "#0f1a0f", border: "1px solid #166534", borderRadius: 6, padding: "16px 20px", marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: "#4ade80", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Essential spend (24-week plan)</div>
               <div style={{ fontSize: 28, fontWeight: 700, color: "#4ade80" }}>£{totalEssentialCost}</div>
-              <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>Everything else on this list is free. The AWS security lab ecosystem is exceptionally well-resourced for free content.</div>
+              <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>Everything else in the 24-week plan is free.</div>
+            </div>
+            <div style={{ background: "#1a1a0a", border: "1px solid #a16207", borderRadius: 6, padding: "16px 20px", marginBottom: 20 }}>
+              <div style={{ fontSize: 11, color: "#facc15", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Post-plan validation (Phase 4 — AIP-C01)</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: "#facc15" }}>£300</div>
+              <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>£285 exam fee + £15 Kane/Maarek Udemy course (on sale). Sit only after completing Week 24.</div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {budget.map((item, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 14px", borderRadius: 4, background: item.type === "essential" ? "#0f1a0f" : "#0a0a0f", border: `1px solid ${item.type === "essential" ? "#166534" : "#1e293b"}` }}>
-                  <span style={{ padding: "2px 8px", borderRadius: 3, background: item.type === "essential" ? "#14532d" : "#1e293b", color: item.type === "essential" ? "#4ade80" : "#475569", fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", flexShrink: 0, marginTop: 1 }}>{item.type === "essential" ? "PAID" : "FREE"}</span>
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 14px", borderRadius: 4, background: item.type === "essential" ? "#0f1a0f" : item.type === "validation" ? "#1a1a0a" : "#0a0a0f", border: `1px solid ${item.type === "essential" ? "#166534" : item.type === "validation" ? "#a16207" : "#1e293b"}` }}>
+                  <span style={{ padding: "2px 8px", borderRadius: 3, background: item.type === "essential" ? "#14532d" : item.type === "validation" ? "#713f12" : "#1e293b", color: item.type === "essential" ? "#4ade80" : item.type === "validation" ? "#facc15" : "#475569", fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", flexShrink: 0, marginTop: 1 }}>{item.type === "essential" ? "PAID" : item.type === "validation" ? "EXAM" : "FREE"}</span>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, color: item.type === "essential" ? "#cbd5e1" : "#64748b" }}>{item.item}</div>
+                    <div style={{ fontSize: 12, color: item.type === "free" ? "#64748b" : "#cbd5e1" }}>{item.item}</div>
                     {item.note && <div style={{ fontSize: 10, color: "#475569", marginTop: 2 }}>{item.note}</div>}
                   </div>
-                  <span style={{ fontWeight: 700, fontSize: 13, color: item.type === "essential" ? "#4ade80" : "#475569", flexShrink: 0 }}>{item.cost}</span>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: item.type === "essential" ? "#4ade80" : item.type === "validation" ? "#facc15" : "#475569", flexShrink: 0 }}>{item.cost}</span>
                 </div>
               ))}
             </div>
