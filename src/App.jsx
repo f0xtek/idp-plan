@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const phases = [
   {
@@ -442,10 +442,420 @@ const typeColors = {
   habit: { bg: "#2a2a1a", border: "#facc15", label: "HABIT", labelBg: "#713f12" },
 };
 
+// --- Utility functions ---
+
+export async function deriveToken(passphrase) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(passphrase);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+export function getTaskId(phaseIndex, weekNumber, taskIndex) {
+  return `p${phaseIndex}-w${weekNumber}-t${taskIndex}`;
+}
+
+export function mergeState(local, remote) {
+  if (Object.keys(local).length === 0) {
+    return { ...remote };
+  }
+  const merged = { ...remote };
+  for (const [key, value] of Object.entries(local)) {
+    if (value) merged[key] = true;
+  }
+  return merged;
+}
+
+// --- Custom hook ---
+
+const LS_TOKEN_KEY = "lp-user-token";
+const LS_STATE_KEY = "lp-completion-state";
+const DEBOUNCE_MS = 2000;
+const RETRY_INTERVAL_MS = 30000;
+const MAX_RETRIES = 3;
+
+function readLocalStorage(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalStorage(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // localStorage unavailable — silently ignore
+  }
+}
+
+function removeLocalStorage(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // localStorage unavailable — silently ignore
+  }
+}
+
+function parseCompletionState(raw) {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+}
+
+export function useCompletionState(phases) {
+  const [completionState, setCompletionState] = useState(() => {
+    const raw = readLocalStorage(LS_STATE_KEY);
+    return parseCompletionState(raw);
+  });
+  const [userToken, setUserToken] = useState(() => {
+    const token = readLocalStorage(LS_TOKEN_KEY);
+    return token && /^[0-9a-f]{64}$/.test(token) ? token : null;
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState(null);
+
+  const debounceTimer = useRef(null);
+  const retryTimer = useRef(null);
+  const retryCount = useRef(0);
+  const pendingState = useRef(null);
+  const tokenRef = useRef(userToken);
+
+  useEffect(() => {
+    tokenRef.current = userToken;
+  }, [userToken]);
+
+  const syncToApi = useCallback(async (token, state) => {
+    if (!token) return;
+    setIsSyncing(true);
+    try {
+      const res = await fetch("/api/progress", {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(state),
+      });
+      if (!res.ok) {
+        throw new Error(`Sync failed: ${res.status}`);
+      }
+      setSyncError(null);
+      retryCount.current = 0;
+      pendingState.current = null;
+    } catch (err) {
+      setSyncError(err.message || "Sync failed");
+      pendingState.current = state;
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  const scheduleDebouncedSync = useCallback((token, state) => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    debounceTimer.current = setTimeout(() => {
+      debounceTimer.current = null;
+      syncToApi(token, state);
+    }, DEBOUNCE_MS);
+  }, [syncToApi]);
+
+  useEffect(() => {
+    retryTimer.current = setInterval(() => {
+      if (pendingState.current && tokenRef.current && retryCount.current < MAX_RETRIES) {
+        retryCount.current += 1;
+        syncToApi(tokenRef.current, pendingState.current);
+      }
+    }, RETRY_INTERVAL_MS);
+    return () => {
+      if (retryTimer.current) clearInterval(retryTimer.current);
+    };
+  }, [syncToApi]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!userToken) return;
+    let cancelled = false;
+    setIsLoading(true);
+
+    (async () => {
+      try {
+        const res = await fetch("/api/progress", {
+          method: "GET",
+          headers: { "Authorization": `Bearer ${userToken}` },
+        });
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+        const remote = await res.json();
+        if (!cancelled) {
+          setCompletionState(prev => {
+            const merged = mergeState(prev, remote);
+            writeLocalStorage(LS_STATE_KEY, JSON.stringify(merged));
+            return merged;
+          });
+        }
+      } catch {
+        // API unreachable — continue with local cache
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [userToken]);
+
+  const toggleTask = useCallback((taskId) => {
+    setCompletionState(prev => {
+      const next = { ...prev };
+      if (next[taskId]) {
+        delete next[taskId];
+      } else {
+        next[taskId] = true;
+      }
+      writeLocalStorage(LS_STATE_KEY, JSON.stringify(next));
+      scheduleDebouncedSync(tokenRef.current, next);
+      return next;
+    });
+  }, [scheduleDebouncedSync]);
+
+  const setPassphrase = useCallback(async (passphrase) => {
+    const token = await deriveToken(passphrase);
+    setUserToken(token);
+    writeLocalStorage(LS_TOKEN_KEY, token);
+  }, []);
+
+  const resetPhase = useCallback((phaseIndex) => {
+    setCompletionState(prev => {
+      const prefix = `p${phaseIndex}-`;
+      const next = {};
+      for (const [key, value] of Object.entries(prev)) {
+        if (!key.startsWith(prefix)) {
+          next[key] = value;
+        }
+      }
+      writeLocalStorage(LS_STATE_KEY, JSON.stringify(next));
+      scheduleDebouncedSync(tokenRef.current, next);
+      return next;
+    });
+  }, [scheduleDebouncedSync]);
+
+  const switchIdentity = useCallback(() => {
+    setUserToken(null);
+    setCompletionState({});
+    removeLocalStorage(LS_TOKEN_KEY);
+    removeLocalStorage(LS_STATE_KEY);
+    setSyncError(null);
+    pendingState.current = null;
+    retryCount.current = 0;
+  }, []);
+
+  return {
+    completionState,
+    userToken,
+    isLoading,
+    isSyncing,
+    syncError,
+    toggleTask,
+    setPassphrase,
+    resetPhase,
+    switchIdentity,
+  };
+}
+
+// --- UI Components ---
+
+export function PassphraseModal({ onSubmit, userToken }) {
+  const [value, setValue] = useState("");
+  const [error, setError] = useState(null);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (value.length < 8) {
+      setError("Passphrase must be at least 8 characters");
+      return;
+    }
+    setError(null);
+    onSubmit(value);
+  };
+
+  return (
+    <div style={{
+      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+      background: "rgba(0, 0, 0, 0.75)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      zIndex: 9999, fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+    }}>
+      <div style={{
+        background: "#0f0f1a", border: "1px solid #1e293b", borderRadius: 8,
+        padding: "32px", width: "100%", maxWidth: 400, margin: "0 16px",
+      }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0", margin: "0 0 8px", letterSpacing: "-0.01em" }}>
+          {userToken ? "Switch identity" : "Start tracking"}
+        </h2>
+        <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 24px", lineHeight: 1.6 }}>
+          Enter a passphrase to sync your progress across devices
+        </p>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="passphrase-input" style={{ display: "block", fontSize: 11, color: "#94a3b8", marginBottom: 6, letterSpacing: "0.05em" }}>
+            Passphrase
+          </label>
+          <input
+            id="passphrase-input"
+            type="password"
+            value={value}
+            onChange={(e) => { setValue(e.target.value); if (error) setError(null); }}
+            placeholder="At least 8 characters"
+            autoFocus
+            style={{
+              width: "100%", padding: "10px 12px", borderRadius: 4,
+              border: `1px solid ${error ? "#ef4444" : "#1e293b"}`,
+              background: "#0a0a0f", color: "#e2e8f0", fontSize: 13,
+              fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+              transition: "border-color 0.15s",
+            }}
+          />
+          {error && <p style={{ fontSize: 11, color: "#ef4444", margin: "6px 0 0" }}>{error}</p>}
+          <button type="submit" style={{
+            width: "100%", padding: "10px 16px", marginTop: 16, borderRadius: 4,
+            border: "1px solid #60a5fa", background: "#1e3a5f", color: "#60a5fa",
+            fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
+            letterSpacing: "0.02em", transition: "all 0.15s",
+          }}>
+            {userToken ? "Sign in" : "Start tracking"}
+          </button>
+        </form>
+        {userToken && (
+          <p style={{ fontSize: 11, color: "#475569", margin: "16px 0 0", textAlign: "center" }}>
+            Signing in with a new passphrase will replace your local progress.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function TaskCheckbox({ checked, onChange, phaseColor, taskLabel }) {
+  return (
+    <button
+      role="checkbox"
+      aria-checked={checked}
+      aria-label={checked ? `Mark ${taskLabel} as incomplete` : `Mark ${taskLabel} as complete`}
+      onClick={onChange}
+      style={{
+        width: 44, height: 44, minWidth: 44, minHeight: 44, padding: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        borderRadius: 4, border: `2px solid ${checked ? phaseColor : "#475569"}`,
+        background: checked ? phaseColor : "transparent",
+        cursor: "pointer", transition: "all 0.15s", flexShrink: 0, fontFamily: "inherit",
+      }}
+    >
+      {checked && (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 9L7.5 12.5L14 5.5" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
+export function WeekProgressBar({ completed, total, phaseColor }) {
+  const ratio = total > 0 ? completed / total : 0;
+  const isComplete = total > 0 && completed === total;
+
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      <span style={{
+        position: "relative", width: 60, height: 6, borderRadius: 3,
+        background: "#1e293b", overflow: "hidden", display: "inline-block",
+      }}>
+        <span style={{
+          position: "absolute", top: 0, left: 0, height: "100%",
+          width: `${ratio * 100}%`, borderRadius: 3, background: phaseColor,
+          opacity: isComplete ? 1 : 0.7,
+          boxShadow: isComplete ? `0 0 6px ${phaseColor}` : "none",
+          transition: "width 0.2s, opacity 0.2s, box-shadow 0.2s",
+        }} />
+      </span>
+      <span style={{
+        fontSize: 10, fontFamily: "inherit",
+        color: isComplete ? phaseColor : "#94a3b8", whiteSpace: "nowrap",
+      }}>
+        {completed}/{total}
+      </span>
+    </span>
+  );
+}
+
+export function ResetPhaseButton({ phaseTitle, onReset }) {
+  const [confirming, setConfirming] = useState(false);
+
+  if (confirming) {
+    return (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 11, color: "#ef4444", lineHeight: 1.4 }}>
+          Reset all progress for {phaseTitle}? This cannot be undone.
+        </span>
+        <span style={{ display: "inline-flex", gap: 6 }}>
+          <button onClick={() => { onReset(); setConfirming(false); }} style={{
+            padding: "4px 10px", borderRadius: 4, border: "1px solid #ef4444",
+            background: "#3b1111", color: "#ef4444", fontSize: 11, fontWeight: 600,
+            fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s",
+          }}>Confirm</button>
+          <button onClick={() => setConfirming(false)} style={{
+            padding: "4px 10px", borderRadius: 4, border: "1px solid #1e293b",
+            background: "transparent", color: "#94a3b8", fontSize: 11, fontWeight: 600,
+            fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s",
+          }}>Cancel</button>
+        </span>
+      </span>
+    );
+  }
+
+  return (
+    <button onClick={() => setConfirming(true)} style={{
+      padding: "4px 8px", borderRadius: 4, border: "none", background: "transparent",
+      color: "#64748b", fontSize: 11, fontFamily: "inherit", cursor: "pointer",
+      transition: "color 0.15s",
+    }}>
+      Reset progress
+    </button>
+  );
+}
+
 export default function SecurityLearningPlan() {
   const [activePhase, setActivePhase] = useState(0);
   const [expandedWeek, setExpandedWeek] = useState(null);
   const [activeTab, setActiveTab] = useState("plan");
+  const [showPassphraseModal, setShowPassphraseModal] = useState(false);
+
+  const {
+    completionState,
+    userToken,
+    isLoading,
+    isSyncing,
+    syncError,
+    toggleTask,
+    setPassphrase,
+    resetPhase,
+    switchIdentity,
+  } = useCompletionState(phases);
+
+  const [dismissedError, setDismissedError] = useState(null);
 
   const phase = phases[activePhase];
   const totalEssentialCost = budget
@@ -456,12 +866,41 @@ export default function SecurityLearningPlan() {
 
   return (
     <div style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace", background: "#0a0a0f", color: "#e2e8f0", minHeight: "100vh" }}>
+      {/* Passphrase Modal */}
+      {(userToken === null || showPassphraseModal) && (
+        <PassphraseModal
+          onSubmit={(passphrase) => { setPassphrase(passphrase); setShowPassphraseModal(false); }}
+          userToken={userToken}
+        />
+      )}
+
+      {/* Sync status indicator */}
+      {isSyncing && (
+        <div style={{ position: "fixed", top: 8, right: 16, padding: "6px 12px", borderRadius: 4, background: "#1e3a5f", border: "1px solid #60a5fa40", color: "#60a5fa", fontSize: 10, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.05em", zIndex: 9998, display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#60a5fa", animation: "pulse 1s infinite" }} />
+          Syncing…
+        </div>
+      )}
+
+      {/* Sync error display */}
+      {syncError && syncError !== dismissedError && (
+        <div style={{ position: "fixed", top: 8, right: 16, padding: "8px 12px", borderRadius: 4, background: "#3b1111", border: "1px solid #ef444440", color: "#ef4444", fontSize: 11, fontFamily: "'JetBrains Mono', monospace", zIndex: 9998, display: "flex", alignItems: "center", gap: 8, maxWidth: 320 }}>
+          <span style={{ flex: 1, lineHeight: 1.4 }}>Sync error: {syncError}</span>
+          <button onClick={() => setDismissedError(syncError)} style={{ background: "transparent", border: "none", color: "#ef4444", fontSize: 14, cursor: "pointer", padding: "0 2px", fontFamily: "inherit", flexShrink: 0 }} aria-label="Dismiss sync error">×</button>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ background: "linear-gradient(135deg, #0f0f1a 0%, #1a0a0a 50%, #0a0f1a 100%)", borderBottom: "1px solid #1e293b", padding: "32px 24px 24px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#f97316", boxShadow: "0 0 8px #f97316" }} />
             <span style={{ color: "#64748b", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase" }}>6-Month Learning Plan — AWS Security Edition</span>
+            {userToken && (
+              <button onClick={() => setShowPassphraseModal(true)} style={{ marginLeft: "auto", padding: "4px 10px", borderRadius: 4, border: "1px solid #1e293b", background: "transparent", color: "#64748b", fontSize: 10, fontFamily: "inherit", cursor: "pointer", letterSpacing: "0.05em", transition: "all 0.15s" }}>
+                Switch identity
+              </button>
+            )}
           </div>
           <h1 style={{ fontSize: "clamp(20px, 4vw, 30px)", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
             Platform Engineer → <span style={{ color: "#f97316" }}>AWS Security</span> + <span style={{ color: "#a78bfa" }}>AI Agent Builder</span>
@@ -519,6 +958,12 @@ export default function SecurityLearningPlan() {
                 <div style={{ textAlign: "right" }}>
                   <div style={{ color: phase.color, fontSize: 20, fontWeight: 700 }}>{phase.weeklyHours}</div>
                   <div style={{ color: "#64748b", fontSize: 10 }}>per week</div>
+                  <div style={{ marginTop: 8 }}>
+                    <ResetPhaseButton
+                      phaseTitle={phase.title + ": " + phase.subtitle}
+                      onReset={() => resetPhase(activePhase)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -526,11 +971,16 @@ export default function SecurityLearningPlan() {
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {phase.weeks_data.map((w) => {
                 const isOpen = expandedWeek === w.week;
+                const weekCompleted = w.tasks.reduce((count, _task, tIdx) => {
+                  const tid = getTaskId(activePhase, w.week, tIdx);
+                  return count + (completionState[tid] ? 1 : 0);
+                }, 0);
                 return (
                   <div key={w.week} style={{ border: `1px solid ${isOpen ? phase.color + "50" : "#1e293b"}`, borderRadius: 6, background: isOpen ? `${phase.color}08` : "#0f0f1a", overflow: "hidden", transition: "all 0.15s" }}>
                     <button onClick={() => setExpandedWeek(isOpen ? null : w.week)} style={{ width: "100%", padding: "14px 16px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, textAlign: "left", fontFamily: "inherit", color: "inherit" }}>
                       <span style={{ width: 48, height: 24, borderRadius: 3, background: `${phase.color}20`, border: `1px solid ${phase.color}50`, color: phase.color, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>W{w.week}</span>
                       <span style={{ flex: 1, fontSize: 13, fontWeight: isOpen ? 600 : 400, color: isOpen ? "#e2e8f0" : "#94a3b8" }}>{w.title}</span>
+                      <WeekProgressBar completed={weekCompleted} total={w.tasks.length} phaseColor={phase.color} />
                       <span style={{ color: "#64748b", fontSize: 11 }}>{w.hours}h</span>
                       <span style={{ color: "#64748b", fontSize: 14, transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.15s" }}>›</span>
                     </button>
@@ -539,11 +989,18 @@ export default function SecurityLearningPlan() {
                         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
                           {w.tasks.map((task, i) => {
                             const tc = typeColors[task.type];
+                            const taskId = getTaskId(activePhase, w.week, i);
                             return (
-                              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 4, background: tc.bg, border: `1px solid ${tc.border}30` }}>
+                              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 4, background: tc.bg, border: `1px solid ${tc.border}30` }}>
+                                <TaskCheckbox
+                                  checked={completionState[taskId] || false}
+                                  onChange={() => toggleTask(taskId)}
+                                  phaseColor={phase.color}
+                                  taskLabel={task.label}
+                                />
                                 <span style={{ padding: "2px 7px", borderRadius: 2, background: tc.labelBg, color: "#fff", fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", flexShrink: 0, marginTop: 1 }}>{tc.label}</span>
-                                <span style={{ flex: 1, fontSize: 12, color: "#cbd5e1", lineHeight: 1.5 }}>
-                                  {task.url ? <a href={task.url} target="_blank" rel="noopener noreferrer" style={{ color: "#93c5fd", textDecoration: "none" }}>{task.label}</a> : task.label}
+                                <span style={{ flex: 1, fontSize: 12, color: completionState[taskId] ? "#64748b" : "#cbd5e1", lineHeight: 1.5, textDecoration: completionState[taskId] ? "line-through" : "none", transition: "all 0.15s" }}>
+                                  {task.url ? <a href={task.url} target="_blank" rel="noopener noreferrer" style={{ color: completionState[taskId] ? "#475569" : "#93c5fd", textDecoration: "none" }}>{task.label}</a> : task.label}
                                 </span>
                                 {task.time && <span style={{ color: "#475569", fontSize: 10, flexShrink: 0, marginTop: 2 }}>{task.time}</span>}
                               </div>
